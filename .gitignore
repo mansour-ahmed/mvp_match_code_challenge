@@ -35,3 +35,5 @@ mvp_match_code_challenge-*.tar
 npm-debug.log
 /assets/node_modules/
 
+# Development database data mapped to Postgres Docker container
+postgres-data
