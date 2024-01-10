@@ -54,8 +54,6 @@ defmodule MvpMatchCodeChallengeWeb.Router do
       on_mount: [{MvpMatchCodeChallengeWeb.UserAuth, :redirect_if_user_is_authenticated}] do
       live "/users/register", UserRegistrationLive, :new
       live "/users/log_in", UserLoginLive, :new
-      live "/users/reset_password", UserForgotPasswordLive, :new
-      live "/users/reset_password/:token", UserResetPasswordLive, :edit
     end
 
     post "/users/log_in", UserSessionController, :create
@@ -67,7 +65,6 @@ defmodule MvpMatchCodeChallengeWeb.Router do
     live_session :require_authenticated_user,
       on_mount: [{MvpMatchCodeChallengeWeb.UserAuth, :ensure_authenticated}] do
       live "/users/settings", UserSettingsLive, :edit
-      live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
     end
   end
 
@@ -75,11 +72,5 @@ defmodule MvpMatchCodeChallengeWeb.Router do
     pipe_through [:browser]
 
     delete "/users/log_out", UserSessionController, :delete
-
-    live_session :current_user,
-      on_mount: [{MvpMatchCodeChallengeWeb.UserAuth, :mount_current_user}] do
-      live "/users/confirm/:token", UserConfirmationLive, :edit
-      live "/users/confirm", UserConfirmationInstructionsLive, :new
-    end
   end
 end

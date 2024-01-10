@@ -4,13 +4,15 @@ defmodule MvpMatchCodeChallenge.AccountsFixtures do
   entities via the `MvpMatchCodeChallenge.Accounts` context.
   """
 
-  def unique_user_email, do: "user#{System.unique_integer()}@example.com"
-  def valid_user_password, do: "hello world!"
+  def unique_user_username, do: "user#{System.unique_integer()}"
+  def valid_user_password(), do: "MReakZzawL8.4L4PHL"
+  def unique_user_password, do: "#{valid_user_password()}#{System.unique_integer()}"
 
   def valid_user_attributes(attrs \\ %{}) do
     Enum.into(attrs, %{
-      email: unique_user_email(),
-      password: valid_user_password()
+      username: unique_user_username(),
+      password: valid_user_password(),
+      role: :seller
     })
   end
 
@@ -24,8 +26,8 @@ defmodule MvpMatchCodeChallenge.AccountsFixtures do
   end
 
   def extract_user_token(fun) do
-    {:ok, captured_email} = fun.(&"[TOKEN]#{&1}[TOKEN]")
-    [_, token | _] = String.split(captured_email.text_body, "[TOKEN]")
+    {:ok, captured_username} = fun.(&"[TOKEN]#{&1}[TOKEN]")
+    [_, token | _] = String.split(captured_username.text_body, "[TOKEN]")
     token
   end
 end

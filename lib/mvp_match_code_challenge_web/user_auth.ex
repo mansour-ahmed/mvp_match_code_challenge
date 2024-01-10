@@ -5,13 +5,11 @@ defmodule MvpMatchCodeChallengeWeb.UserAuth do
   import Phoenix.Controller
 
   alias MvpMatchCodeChallenge.Accounts
+  alias MvpMatchCodeChallenge.Accounts.UserToken
 
-  # Make the remember me cookie valid for 60 days.
-  # If you want bump or reduce this value, also change
-  # the token expiry itself in UserToken.
-  @max_age 60 * 60 * 24 * 60
+  @max_age 60 * 60 * 24 * UserToken.get_session_validity_in_days()
   @remember_me_cookie "_mvp_match_code_challenge_web_user_remember_me"
-  @remember_me_options [sign: true, max_age: @max_age, same_site: "Lax"]
+  @remember_me_options [sign: true, max_age: @max_age, same_site: "Lax", http_only: true]
 
   @doc """
   Logs the user in.
@@ -195,9 +193,6 @@ defmodule MvpMatchCodeChallengeWeb.UserAuth do
 
   @doc """
   Used for routes that require the user to be authenticated.
-
-  If you want to enforce the user email is confirmed before
-  they use the application at all, here would be a good place.
   """
   def require_authenticated_user(conn, _opts) do
     if conn.assigns[:current_user] do
