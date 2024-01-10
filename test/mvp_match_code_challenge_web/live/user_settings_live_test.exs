@@ -1,5 +1,5 @@
 defmodule MvpMatchCodeChallengeWeb.UserSettingsLiveTest do
-  use MvpMatchCodeChallengeWeb.ConnCase
+  use MvpMatchCodeChallengeWeb.ConnCase, async: true
 
   alias MvpMatchCodeChallenge.Accounts
   import Phoenix.LiveViewTest

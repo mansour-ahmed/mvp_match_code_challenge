@@ -51,7 +51,12 @@ defmodule MvpMatchCodeChallenge.MixProject do
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.1.1"},
-      {:plug_cowboy, "~> 2.5"}
+      {:plug_cowboy, "~> 2.5"},
+      {:ex_check, "~> 0.15.0", only: [:dev, :test], runtime: false},
+      {:sobelow, "~> 0.13.0", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.7.3", only: [:dev, :test], runtime: false},
+      {:mix_audit, "~> 2.1.2", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4.3", only: [:dev, :test], runtime: false}
     ]
   end
 

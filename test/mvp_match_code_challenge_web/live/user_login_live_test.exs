@@ -1,5 +1,5 @@
 defmodule MvpMatchCodeChallengeWeb.UserLoginLiveTest do
-  use MvpMatchCodeChallengeWeb.ConnCase
+  use MvpMatchCodeChallengeWeb.ConnCase, async: true
 
   import Phoenix.LiveViewTest
   import MvpMatchCodeChallenge.AccountsFixtures

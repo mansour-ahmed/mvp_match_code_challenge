@@ -1,5 +1,5 @@
 defmodule MvpMatchCodeChallenge.AccountsTest do
-  use MvpMatchCodeChallenge.DataCase
+  use MvpMatchCodeChallenge.DataCase, async: true
 
   alias MvpMatchCodeChallenge.Accounts
 

@@ -1,5 +1,5 @@
 defmodule MvpMatchCodeChallengeWeb.PageControllerTest do
-  use MvpMatchCodeChallengeWeb.ConnCase
+  use MvpMatchCodeChallengeWeb.ConnCase, async: true
 
   test "GET /", %{conn: conn} do
     conn = get(conn, ~p"/")
