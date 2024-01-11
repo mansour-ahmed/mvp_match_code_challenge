@@ -26,6 +26,15 @@ defmodule MvpMatchCodeChallengeWeb.Router do
     pipe_through :api
 
     scope "/users" do
+      scope "/" do
+        pipe_through [:api_require_authenticated_user, :api_require_user_admin]
+        get "/:id", UserController, :show
+        delete "/:id", UserController, :delete
+        post "/:id/deposit/reset", UserController, :reset_deposit
+        post "/:id/deposit/:coin", UserController, :deposit
+      end
+
+      post "/", UserController, :create
       post "/token", UserSessionController, :create_api_token
     end
 
@@ -51,11 +60,6 @@ defmodule MvpMatchCodeChallengeWeb.Router do
 
     get "/", PageController, :home
   end
-
-  # Other scopes may use custom stacks.
-  # scope "/api", MvpMatchCodeChallengeWeb do
-  #   pipe_through :api
-  # end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:mvp_match_code_challenge, :dev_routes) do

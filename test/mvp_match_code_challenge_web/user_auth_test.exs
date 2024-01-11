@@ -517,6 +517,48 @@ defmodule MvpMatchCodeChallengeWeb.UserAuthTest do
     end
   end
 
+  describe "api_require_user_admin/2" do
+    test "responds with 401 if user is not authenticated", %{conn: conn, user: user} do
+      params = %{"id" => user.id}
+
+      conn =
+        %{conn | params: params}
+        |> fetch_flash()
+        |> UserAuth.api_require_user_admin([])
+
+      assert conn.halted
+      assert conn.status == 401
+      assert conn.resp_body == "Not authorized"
+    end
+
+    test "responds with 401 if user is not admin", %{conn: conn, user: user} do
+      random_user = user_fixture(%{role: :seller})
+      params = %{"id" => random_user.id}
+
+      conn =
+        %{conn | params: params}
+        |> assign(:current_user, user)
+        |> fetch_flash()
+        |> UserAuth.api_require_user_admin([])
+
+      assert conn.halted
+      assert conn.status == 401
+      assert conn.resp_body == "Not authorized"
+    end
+
+    test "does not respond with 401 if user is admin", %{conn: conn, user: user} do
+      params = %{"id" => user.id}
+
+      conn =
+        %{conn | params: params}
+        |> assign(:current_user, user)
+        |> UserAuth.api_require_user_admin([])
+
+      refute conn.halted
+      refute conn.status
+    end
+  end
+
   describe "require_product_seller/2" do
     setup %{conn: conn, user: user} do
       product = ProductsFixtures.product_fixture(%{seller_id: user.id})

@@ -140,6 +140,9 @@ defmodule MvpMatchCodeChallenge.Accounts.User do
     |> validate_password(opts)
   end
 
+  @doc """
+  A user changeset for changing user deposit value.
+  """
   def deposit_changeset(user, attrs) do
     user
     |> cast(attrs, [:deposit])

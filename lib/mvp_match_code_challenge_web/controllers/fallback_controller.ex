@@ -25,6 +25,13 @@ defmodule MvpMatchCodeChallengeWeb.FallbackController do
     |> render(:"400")
   end
 
+  def call(conn, {:error, :bad_request, custom_message}) do
+    conn
+    |> put_status(:bad_request)
+    |> put_resp_content_type("application/json")
+    |> json(%{errors: %{details: custom_message}})
+  end
+
   def call(conn, {:error, :not_found}) do
     conn
     |> put_status(:not_found)
@@ -43,5 +50,15 @@ defmodule MvpMatchCodeChallengeWeb.FallbackController do
       json: MvpMatchCodeChallengeWeb.ErrorJSON
     )
     |> render(:"500")
+  end
+
+  def call(conn, {:error, :not_implemented}) do
+    conn
+    |> put_status(:not_implemented)
+    |> put_view(
+      html: MvpMatchCodeChallengeWeb.ErrorHTML,
+      json: MvpMatchCodeChallengeWeb.ErrorJSON
+    )
+    |> render(:"501")
   end
 end

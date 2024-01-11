@@ -30,4 +30,13 @@ defmodule MvpMatchCodeChallenge.AccountsFixtures do
     [_, token | _] = String.split(captured_username.text_body, "[TOKEN]")
     token
   end
+
+  def user_json(user) do
+    %{
+      "id" => user.id,
+      "username" => user.username,
+      "role" => user.role |> Atom.to_string(),
+      "deposit" => user.deposit
+    }
+  end
 end

@@ -92,6 +92,43 @@ defmodule MvpMatchCodeChallenge.Accounts do
     User.registration_changeset(user, attrs, hash_password: false, validate_username: false)
   end
 
+  @doc """
+  Adds given coin value to user deposit.
+  Only permitted for users with the `:buyer` role.
+  Only 5, 10, 20, 50, 100 coins are allowed.
+  """
+  def add_coin_to_user_deposit(%User{} = user, coin) when is_integer(coin) do
+    if coin_valid?(coin) do
+      update_user_deposit(user, %{deposit: coin + user.deposit})
+    else
+      {:error, :invalid_coin}
+    end
+  end
+
+  defp coin_valid?(coin) do
+    valid_coins = [5, 10, 20, 50, 100]
+    Enum.member?(valid_coins, coin)
+  end
+
+  @doc """
+  Resets the user deposit to zero.
+  Only permitted for users with the `:buyer` role.
+  """
+  def reset_user_deposit(%User{} = user) do
+    update_user_deposit(user, %{deposit: 0})
+  end
+
+  defp update_user_deposit(%User{} = user, attrs) do
+    case user do
+      %{role: :buyer} ->
+        changeset = User.deposit_changeset(user, attrs)
+        Repo.update(changeset)
+
+      _ ->
+        {:error, :not_implemented}
+    end
+  end
+
   ## Settings
 
   @doc """
@@ -131,6 +168,20 @@ defmodule MvpMatchCodeChallenge.Accounts do
     |> Repo.transaction()
     |> case do
       {:ok, %{user: user}} -> {:ok, user}
+      {:error, :user, changeset, _} -> {:error, changeset}
+    end
+  end
+
+  @doc """
+  Deletes the given user and all its associated tokens.
+  """
+  def delete_user(user) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.delete(:user, user)
+    |> Ecto.Multi.delete_all(:tokens, UserToken.by_user_and_contexts_query(user, :all))
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{user: _}} -> :ok
       {:error, :user, changeset, _} -> {:error, changeset}
     end
   end

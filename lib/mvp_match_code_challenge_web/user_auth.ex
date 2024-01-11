@@ -304,6 +304,37 @@ defmodule MvpMatchCodeChallengeWeb.UserAuth do
     |> halt()
   end
 
+  def api_require_user_admin(
+        %{assigns: %{current_user: %{id: current_user_id}}, params: %{"id" => user_id}} = conn,
+        _opts
+      ) do
+    user = Accounts.get_user(user_id)
+
+    # return 'not authorized' even if user is not found to avoid user enumeration attacks
+    if user && user.id === current_user_id do
+      conn
+    else
+      conn
+      |> send_resp(
+        :unauthorized,
+        "Not authorized"
+      )
+      |> halt()
+    end
+  end
+
+  def api_require_user_admin(
+        conn,
+        _opts
+      ) do
+    conn
+    |> send_resp(
+      :unauthorized,
+      "Not authorized"
+    )
+    |> halt()
+  end
+
   def require_product_seller(
         %{assigns: %{current_user: %{id: user_id}}, params: %{"id" => product_id}} = conn,
         _opts
