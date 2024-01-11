@@ -144,6 +144,26 @@ defmodule MvpMatchCodeChallengeWeb.UserAuthTest do
     end
   end
 
+  describe "fetch_api_user/2" do
+    test "authenticates user from api token", %{conn: conn, user: user} do
+      api_token = Accounts.create_user_api_token(user)
+
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer #{api_token}")
+        |> UserAuth.fetch_api_user([])
+
+      assert conn.assigns.current_user.id == user.id
+    end
+
+    test "does not authenticate if data is missing", %{conn: conn, user: user} do
+      _ = Accounts.generate_user_session_token(user)
+      conn = UserAuth.fetch_api_user(conn, [])
+      refute get_session(conn, :user_token)
+      refute conn.assigns.current_user
+    end
+  end
+
   describe "on_mount: mount_current_user" do
     test "assigns current_user based on a valid user_token", %{conn: conn, user: user} do
       user_token = Accounts.generate_user_session_token(user)
@@ -402,6 +422,95 @@ defmodule MvpMatchCodeChallengeWeb.UserAuthTest do
         conn
         |> assign(:current_user, user)
         |> UserAuth.require_authenticated_user([])
+
+      refute conn.halted
+      refute conn.status
+    end
+  end
+
+  describe "api_require_authenticated_user/2" do
+    test "responds with 401 if user is not authenticated", %{conn: conn} do
+      conn =
+        conn
+        |> fetch_flash()
+        |> UserAuth.api_require_authenticated_user([])
+
+      assert conn.halted
+      assert conn.status == 401
+      assert conn.resp_body == "You must use a valid token to access this resource."
+    end
+
+    test "does not respond with 401 if user is authenticated", %{conn: conn, user: user} do
+      conn =
+        conn
+        |> assign(:current_user, user)
+        |> UserAuth.api_require_authenticated_user([])
+
+      refute conn.halted
+      refute conn.status
+    end
+  end
+
+  describe "api_require_product_seller/2" do
+    setup %{conn: conn, user: user} do
+      product = ProductsFixtures.product_fixture(%{seller_id: user.id})
+      %{conn: conn, user: user, product: product}
+    end
+
+    test "responds with 401 if product id is not valid", %{conn: conn} do
+      random_user = user_fixture(%{role: :seller})
+      params = %{"id" => -1}
+
+      conn =
+        %{conn | params: params}
+        |> assign(:current_user, random_user)
+        |> fetch_flash()
+        |> UserAuth.api_require_product_seller([])
+
+      assert conn.halted
+      assert conn.status == 401
+      assert conn.resp_body == "Not authorized"
+    end
+
+    test "responds with 401 if user is not authenticated", %{conn: conn, product: product} do
+      params = %{"id" => product.id}
+
+      conn =
+        %{conn | params: params}
+        |> fetch_flash()
+        |> UserAuth.api_require_product_seller([])
+
+      assert conn.halted
+      assert conn.status == 401
+      assert conn.resp_body == "You must be the seller of the product to access this resource."
+    end
+
+    test "responds with 401 if user is not product seller", %{conn: conn, product: product} do
+      random_user = user_fixture(%{role: :seller})
+      params = %{"id" => product.id}
+
+      conn =
+        %{conn | params: params}
+        |> assign(:current_user, random_user)
+        |> fetch_flash()
+        |> UserAuth.api_require_product_seller([])
+
+      assert conn.halted
+      assert conn.status == 401
+      assert conn.resp_body == "Not authorized"
+    end
+
+    test "does not respond with 401 if user is product seller", %{
+      conn: conn,
+      user: user,
+      product: product
+    } do
+      params = %{"id" => product.id}
+
+      conn =
+        %{conn | params: params}
+        |> assign(:current_user, user)
+        |> UserAuth.api_require_product_seller([])
 
       refute conn.halted
       refute conn.status

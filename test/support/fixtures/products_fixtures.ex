@@ -26,4 +26,14 @@ defmodule MvpMatchCodeChallenge.ProductsFixtures do
 
     product
   end
+
+  def product_json(product) do
+    %{
+      "id" => product.id,
+      "seller_id" => product.seller_id,
+      "product_name" => product.product_name,
+      "cost" => product.cost |> Decimal.to_string(),
+      "amount_available" => product.amount_available
+    }
+  end
 end

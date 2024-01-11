@@ -19,6 +19,7 @@ defmodule MvpMatchCodeChallengeWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+    plug :fetch_api_user
   end
 
   scope "/api", MvpMatchCodeChallengeWeb do
@@ -26,6 +27,22 @@ defmodule MvpMatchCodeChallengeWeb.Router do
 
     scope "/users" do
       post "/token", UserSessionController, :create_api_token
+    end
+
+    scope "/products" do
+      get "/", ProductController, :index
+      get "/:id", ProductController, :show
+
+      scope "/" do
+        pipe_through [:api_require_authenticated_user]
+        post "/", ProductController, :create
+      end
+
+      scope "/:id" do
+        pipe_through [:api_require_authenticated_user, :api_require_product_seller]
+        put "/", ProductController, :update
+        delete "/", ProductController, :delete
+      end
     end
   end
 

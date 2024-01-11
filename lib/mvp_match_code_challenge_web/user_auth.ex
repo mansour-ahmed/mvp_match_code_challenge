@@ -108,6 +108,16 @@ defmodule MvpMatchCodeChallengeWeb.UserAuth do
     end
   end
 
+  def fetch_api_user(conn, _opts) do
+    with ["Bearer " <> token] <- get_req_header(conn, "authorization"),
+         {:ok, user} <- Accounts.fetch_user_by_api_token(token) do
+      assign(conn, :current_user, user)
+    else
+      _ ->
+        assign(conn, :current_user, nil)
+    end
+  end
+
   @doc """
   Handles mounting and authenticating the current_user in LiveViews.
 
@@ -249,6 +259,49 @@ defmodule MvpMatchCodeChallengeWeb.UserAuth do
       |> redirect(to: ~p"/users/log_in")
       |> halt()
     end
+  end
+
+  @doc """
+  Used for routes that require the user to be authenticated.
+  """
+  def api_require_authenticated_user(conn, _opts) do
+    if conn.assigns[:current_user] do
+      conn
+    else
+      conn
+      |> send_resp(:unauthorized, "You must use a valid token to access this resource.")
+      |> halt()
+    end
+  end
+
+  def api_require_product_seller(
+        %{assigns: %{current_user: %{id: user_id}}, params: %{"id" => product_id}} = conn,
+        _opts
+      ) do
+    product = Products.get_product_by_seller_id(product_id, user_id)
+
+    if product do
+      conn
+    else
+      conn
+      |> send_resp(
+        :unauthorized,
+        "Not authorized"
+      )
+      |> halt()
+    end
+  end
+
+  def api_require_product_seller(
+        conn,
+        _opts
+      ) do
+    conn
+    |> send_resp(
+      :unauthorized,
+      "You must be the seller of the product to access this resource."
+    )
+    |> halt()
   end
 
   def require_product_seller(
