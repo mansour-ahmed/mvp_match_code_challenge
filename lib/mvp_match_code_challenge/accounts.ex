@@ -4,6 +4,7 @@ defmodule MvpMatchCodeChallenge.Accounts do
   """
 
   import Ecto.Query, warn: false
+  alias MvpMatchCodeChallenge.VendingMachine
   alias MvpMatchCodeChallenge.Repo
 
   alias MvpMatchCodeChallenge.Accounts.{User, UserToken}
@@ -98,16 +99,11 @@ defmodule MvpMatchCodeChallenge.Accounts do
   Only 5, 10, 20, 50, 100 coins are allowed.
   """
   def add_coin_to_user_deposit(%User{} = user, coin) when is_integer(coin) do
-    if coin_valid?(coin) do
+    if VendingMachine.coin_valid?(coin) do
       update_user_deposit(user, %{deposit: coin + user.deposit})
     else
       {:error, :invalid_coin}
     end
-  end
-
-  defp coin_valid?(coin) do
-    valid_coins = [5, 10, 20, 50, 100]
-    Enum.member?(valid_coins, coin)
   end
 
   @doc """

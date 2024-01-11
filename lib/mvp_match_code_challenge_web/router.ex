@@ -25,6 +25,11 @@ defmodule MvpMatchCodeChallengeWeb.Router do
   scope "/api", MvpMatchCodeChallengeWeb do
     pipe_through :api
 
+    scope "/" do
+      pipe_through :api_require_authenticated_user
+      post "/buy", VendingMachineController, :buy
+    end
+
     scope "/users" do
       scope "/" do
         pipe_through [:api_require_authenticated_user, :api_require_user_admin]
