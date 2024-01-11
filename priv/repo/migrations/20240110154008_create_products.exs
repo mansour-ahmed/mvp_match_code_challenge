@@ -17,7 +17,7 @@ defmodule MvpMatchCodeChallenge.Repo.Migrations.CreateProducts do
     create constraint(:products, :cost, check: "cost > 0 AND cost <= 100000000")
 
     create constraint(:products, :amount_available,
-             check: "amount_available > 0 AND amount_available <= 1000000"
+             check: "amount_available >= 0 AND amount_available <= 1000000"
            )
 
     create constraint(:products, :product_name,

@@ -92,9 +92,9 @@ defmodule MvpMatchCodeChallenge.ProductsTest do
     end
 
     test "validates amount_available" do
-      product = valid_product_attributes(%{amount_available: 0})
+      product = valid_product_attributes(%{amount_available: -1})
       {:error, changeset} = Products.create_product(product)
-      assert %{amount_available: ["must be greater than 0"]} = errors_on(changeset)
+      assert %{amount_available: ["must be greater than or equal to 0"]} = errors_on(changeset)
 
       product = valid_product_attributes(%{amount_available: 1_000_001})
       {:error, changeset} = Products.create_product(product)

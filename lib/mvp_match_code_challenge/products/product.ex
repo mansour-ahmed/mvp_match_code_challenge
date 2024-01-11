@@ -24,6 +24,12 @@ defmodule MvpMatchCodeChallenge.Products.Product do
     |> validate_product_name()
   end
 
+  def amount_available_changeset(product, attrs) do
+    product
+    |> cast(attrs, [:amount_available])
+    |> validate_amount_available()
+  end
+
   defp validate_seller_id(changeset, attrs) do
     changeset
     |> validate_required([:seller_id])
@@ -51,7 +57,7 @@ defmodule MvpMatchCodeChallenge.Products.Product do
     changeset
     |> validate_required([:amount_available])
     |> validate_number(:amount_available,
-      greater_than: 0,
+      greater_than_or_equal_to: 0,
       less_than_or_equal_to: 1_000_000
     )
   end
