@@ -23,7 +23,10 @@ defmodule MvpMatchCodeChallengeWeb.ProductController do
   def create(
         %{
           assigns: %{
-            current_user: current_user
+            current_user:
+              %{
+                role: :seller
+              } = current_user
           }
         } = conn,
         %{"product" => product_params}

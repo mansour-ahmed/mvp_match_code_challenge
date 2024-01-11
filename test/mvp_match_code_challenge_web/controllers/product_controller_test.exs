@@ -60,6 +60,26 @@ defmodule MvpMatchCodeChallengeWeb.ProductControllerTest do
              }
     end
 
+    test "renders errors when user is not seller", %{
+      conn: conn,
+      random_product: product
+    } do
+      user = AccountsFixtures.user_fixture(%{role: :buyer})
+      user_token = Accounts.create_user_api_token(user)
+      conn_with_token = put_req_header(conn, "authorization", "Bearer #{user_token}")
+
+      conn =
+        post(conn_with_token, ~p"/api/products",
+          product: %{
+            product_name: "some product_name",
+            cost: 1,
+            amount_available: 1
+          }
+        )
+
+      assert json_response(conn, 400)["errors"] == %{"detail" => "Bad Request"}
+    end
+
     test "renders product when data is valid", %{conn_with_token: conn, user: user} do
       %{
         product_name: product_name,
