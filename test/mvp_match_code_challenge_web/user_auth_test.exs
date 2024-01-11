@@ -4,6 +4,7 @@ defmodule MvpMatchCodeChallengeWeb.UserAuthTest do
   alias Phoenix.LiveView
   alias MvpMatchCodeChallenge.Accounts
   alias MvpMatchCodeChallengeWeb.UserAuth
+  alias MvpMatchCodeChallenge.ProductsFixtures
   import MvpMatchCodeChallenge.AccountsFixtures
 
   @remember_me_cookie "_mvp_match_code_challenge_web_user_remember_me"
@@ -17,7 +18,7 @@ defmodule MvpMatchCodeChallengeWeb.UserAuthTest do
       )
       |> init_test_session(%{})
 
-    %{user: user_fixture(), conn: conn}
+    %{user: user_fixture(%{role: :seller}), conn: conn}
   end
 
   describe "log_in_user/3" do
@@ -258,6 +259,85 @@ defmodule MvpMatchCodeChallengeWeb.UserAuthTest do
     end
   end
 
+  describe "on_mount: ensure_product_seller" do
+    setup %{conn: conn, user: user} do
+      product = ProductsFixtures.product_fixture(%{seller_id: user.id})
+      %{conn: conn, user: user, product: product}
+    end
+
+    test "redirects to products page if there isn't a valid user_token", %{
+      conn: conn,
+      product: product
+    } do
+      user_token = "invalid_token"
+
+      session =
+        conn
+        |> put_session(:user_token, user_token)
+        |> get_session()
+
+      socket = %LiveView.Socket{
+        endpoint: MvpMatchCodeChallengeWeb.Endpoint,
+        assigns: %{__changed__: %{}, flash: %{}}
+      }
+
+      {:halt, updated_socket} =
+        UserAuth.on_mount(:ensure_product_seller, %{"id" => product.id}, session, socket)
+
+      assert updated_socket.assigns.product == nil
+    end
+
+    test "redirects to products page if given user isn't product seller", %{
+      conn: conn,
+      product: product
+    } do
+      random_user = user_fixture(%{role: :seller})
+      user_token = Accounts.generate_user_session_token(random_user)
+
+      session =
+        conn
+        |> put_session(:user_token, user_token)
+        |> get_session()
+
+      {:halt, updated_socket} =
+        UserAuth.on_mount(
+          :ensure_product_seller,
+          %{"id" => product.id},
+          session,
+          %LiveView.Socket{
+            assigns: %{__changed__: %{}, flash: %{}, current_user: random_user}
+          }
+        )
+
+      assert updated_socket.assigns.product == nil
+    end
+
+    test "assigns product based on a valid user_token", %{
+      conn: conn,
+      user: user,
+      product: product
+    } do
+      user_token = Accounts.generate_user_session_token(user)
+
+      session =
+        conn
+        |> put_session(:user_token, user_token)
+        |> get_session()
+
+      {:cont, updated_socket} =
+        UserAuth.on_mount(
+          :ensure_product_seller,
+          %{"id" => product.id},
+          session,
+          %LiveView.Socket{
+            assigns: %{__changed__: %{}, flash: %{}, current_user: user}
+          }
+        )
+
+      assert updated_socket.assigns.product == product
+    end
+  end
+
   describe "redirect_if_user_is_authenticated/2" do
     test "redirects if user is authenticated", %{conn: conn, user: user} do
       conn =
@@ -322,6 +402,78 @@ defmodule MvpMatchCodeChallengeWeb.UserAuthTest do
         conn
         |> assign(:current_user, user)
         |> UserAuth.require_authenticated_user([])
+
+      refute conn.halted
+      refute conn.status
+    end
+  end
+
+  describe "require_product_seller/2" do
+    setup %{conn: conn, user: user} do
+      product = ProductsFixtures.product_fixture(%{seller_id: user.id})
+      %{conn: conn, user: user, product: product}
+    end
+
+    test "redirects if product id is not valid", %{conn: conn} do
+      random_user = user_fixture(%{role: :seller})
+      params = %{"id" => -1}
+
+      conn =
+        %{conn | params: params}
+        |> assign(:current_user, random_user)
+        |> fetch_flash()
+        |> UserAuth.require_product_seller([])
+
+      assert conn.halted
+      assert redirected_to(conn) == ~p"/products"
+
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) ==
+               "You must be the seller of the product to access this page."
+    end
+
+    test "redirects if user is not authenticated", %{conn: conn, product: product} do
+      params = %{"id" => product.id}
+
+      conn =
+        %{conn | params: params}
+        |> fetch_flash()
+        |> UserAuth.require_product_seller([])
+
+      assert conn.halted
+      assert redirected_to(conn) == ~p"/products"
+
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) ==
+               "You must be the seller of the product to access this page."
+    end
+
+    test "redirects if user is not product seller", %{conn: conn, product: product} do
+      random_user = user_fixture(%{role: :seller})
+      params = %{"id" => product.id}
+
+      conn =
+        %{conn | params: params}
+        |> assign(:current_user, random_user)
+        |> fetch_flash()
+        |> UserAuth.require_product_seller([])
+
+      assert conn.halted
+      assert redirected_to(conn) == ~p"/products"
+
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) ==
+               "You must be the seller of the product to access this page."
+    end
+
+    test "does not redirect if user is product seller", %{
+      conn: conn,
+      user: user,
+      product: product
+    } do
+      params = %{"id" => product.id}
+
+      conn =
+        %{conn | params: params}
+        |> assign(:current_user, user)
+        |> UserAuth.require_product_seller([])
 
       refute conn.halted
       refute conn.status

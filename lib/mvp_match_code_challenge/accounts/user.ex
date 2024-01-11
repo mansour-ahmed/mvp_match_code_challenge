@@ -4,7 +4,7 @@ defmodule MvpMatchCodeChallenge.Accounts.User do
   import Ecto.Changeset
 
   @valid_roles [:buyer, :seller]
-  @valid_params [:username, :password, :deposit, :role]
+  @valid_schema_fields ~w(username password deposit role)a
 
   schema "users" do
     field :username, :string
@@ -42,7 +42,7 @@ defmodule MvpMatchCodeChallenge.Accounts.User do
   """
   def registration_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, @valid_params)
+    |> cast(attrs, @valid_schema_fields)
     |> validate_username(opts)
     |> validate_password(opts)
     |> validate_deposit()

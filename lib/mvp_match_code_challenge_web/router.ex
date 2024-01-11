@@ -69,6 +69,26 @@ defmodule MvpMatchCodeChallengeWeb.Router do
     live_session :require_authenticated_user,
       on_mount: [{MvpMatchCodeChallengeWeb.UserAuth, :ensure_authenticated}] do
       live "/users/settings", UserSettingsLive, :edit
+
+      live "/products", ProductLive.Index, :index
+      live "/products/new", ProductLive.Index, :new
+      live "/products/:id", ProductLive.Show, :show
+    end
+  end
+
+  scope "/", MvpMatchCodeChallengeWeb do
+    pipe_through [:browser, :require_authenticated_user, :require_product_seller]
+
+    live_session :product_seller_required,
+      on_mount: [
+        {MvpMatchCodeChallengeWeb.UserAuth, :ensure_authenticated},
+        {
+          MvpMatchCodeChallengeWeb.UserAuth,
+          :ensure_product_seller
+        }
+      ] do
+      live "/products/:id/edit", ProductLive.Index, :edit
+      live "/products/:id/show/edit", ProductLive.Show, :edit
     end
   end
 

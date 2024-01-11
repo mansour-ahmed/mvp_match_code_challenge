@@ -35,16 +35,14 @@ defmodule MvpMatchCodeChallenge.AccountsTest do
     end
   end
 
-  describe "get_user!/1" do
-    test "raises if id is invalid" do
-      assert_raise Ecto.NoResultsError, fn ->
-        Accounts.get_user!(-1)
-      end
+  describe "!/1" do
+    test "returns nil if id is invalid" do
+      assert Accounts.get_user(-1) == nil
     end
 
     test "returns the user with the given id" do
       %{id: id} = user = user_fixture()
-      assert %User{id: ^id} = Accounts.get_user!(user.id)
+      assert %User{id: ^id} = Accounts.get_user(user.id)
     end
   end
 
