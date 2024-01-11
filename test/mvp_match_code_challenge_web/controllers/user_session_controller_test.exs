@@ -95,6 +95,31 @@ defmodule MvpMatchCodeChallengeWeb.UserSessionControllerTest do
     end
   end
 
+  describe "POST /api/users/token" do
+    test "returns 400 when no correct params are sent", %{conn: conn} do
+      conn = post(conn, ~p"/api/users/token", %{})
+      assert response(conn, 400) == "Invalid params"
+    end
+
+    test "returns 401 when credentials are incorrect", %{conn: conn} do
+      conn =
+        post(conn, ~p"/api/users/token", %{
+          "user" => %{"username" => "invalid_username", "password" => "invalid_password"}
+        })
+
+      assert response(conn, 401) == "Invalid username or password"
+    end
+
+    test "returns user token when credentials are valid", %{conn: conn, user: user} do
+      conn =
+        post(conn, ~p"/api/users/token", %{
+          "user" => %{"username" => user.username, "password" => valid_user_password()}
+        })
+
+      assert response(conn, 200)
+    end
+  end
+
   describe "DELETE /users/log_out" do
     test "logs the user out", %{conn: conn, user: user} do
       conn =

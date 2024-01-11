@@ -273,4 +273,45 @@ defmodule MvpMatchCodeChallenge.AccountsTest do
       refute inspect(%User{password: "123456"}) =~ "password: \"123456\""
     end
   end
+
+  describe "create_user_api_token/1" do
+    test "creates a token" do
+      user = user_fixture()
+      encoded_token = Accounts.create_user_api_token(user)
+
+      {:ok, token} = Base.url_decode64(encoded_token, padding: false)
+
+      assert user_token = Repo.get_by(UserToken, token: :crypto.hash(:sha256, token))
+      assert user_token.context == "api-token"
+      assert user_token.sent_to == user.username
+      assert user_token.user_id == user.id
+    end
+  end
+
+  describe "fetch_user_by_api_token/1" do
+    setup do
+      user = user_fixture()
+      encoded_token = Accounts.create_user_api_token(user)
+      %{user: user, encoded_token: encoded_token}
+    end
+
+    test "does not return user for invalid token" do
+      assert Accounts.fetch_user_by_api_token("oops") == :error
+    end
+
+    test "does not return user for expired token" do
+      {1, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
+      assert Accounts.fetch_user_by_api_token("oops") == :error
+    end
+
+    test "does not return user for token with outdated username", %{encoded_token: encoded_token} do
+      {1, nil} = Repo.update_all(User, set: [username: "#{System.unique_integer()}"])
+      assert Accounts.fetch_user_by_api_token(encoded_token) == :error
+    end
+
+    test "returns user by token", %{user: user, encoded_token: encoded_token} do
+      assert {:ok, api_user} = Accounts.fetch_user_by_api_token(encoded_token)
+      assert api_user.id == user.id
+    end
+  end
 end

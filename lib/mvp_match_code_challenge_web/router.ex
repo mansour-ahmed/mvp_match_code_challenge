@@ -21,6 +21,14 @@ defmodule MvpMatchCodeChallengeWeb.Router do
     plug :accepts, ["json"]
   end
 
+  scope "/api", MvpMatchCodeChallengeWeb do
+    pipe_through :api
+
+    scope "/users" do
+      post "/token", UserSessionController, :create_api_token
+    end
+  end
+
   scope "/", MvpMatchCodeChallengeWeb do
     pipe_through :browser
 

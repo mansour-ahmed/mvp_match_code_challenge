@@ -8,6 +8,10 @@ defmodule MvpMatchCodeChallenge.Accounts.UserToken do
   @rand_size 32
 
   @session_validity_in_days 60
+  @api_token_validity_in_days 90
+
+  @session_token_context "session"
+  @api_token_context "api-token"
 
   schema "users_tokens" do
     field :token, :binary
@@ -39,7 +43,7 @@ defmodule MvpMatchCodeChallenge.Accounts.UserToken do
   """
   def build_session_token(user) do
     token = :crypto.strong_rand_bytes(@rand_size)
-    {token, %UserToken{token: token, context: "session", user_id: user.id}}
+    {token, %UserToken{token: token, context: @session_token_context, user_id: user.id}}
   end
 
   @doc """
@@ -52,7 +56,7 @@ defmodule MvpMatchCodeChallenge.Accounts.UserToken do
   """
   def verify_session_token_query(token) do
     query =
-      from token in by_token_and_context_query(token, "session"),
+      from token in by_token_and_context_query(token, @session_token_context),
         join: user in assoc(token, :user),
         where: token.inserted_at > ago(@session_validity_in_days, "day"),
         select: user
@@ -70,8 +74,27 @@ defmodule MvpMatchCodeChallenge.Accounts.UserToken do
   their username in the system, the tokens sent to the previous username are no longer
   valid.
   """
-  def build_username_token(user, context) do
-    build_hashed_token(user, context, user.username)
+  def build_api_token(user) do
+    build_hashed_token(user, @api_token_context, user.username)
+  end
+
+  def verify_api_token_query(token) do
+    case Base.url_decode64(token, padding: false) do
+      {:ok, decoded_token} ->
+        hashed_token = :crypto.hash(@hash_algorithm, decoded_token)
+        days = @api_token_validity_in_days
+
+        query =
+          from token in by_token_and_context_query(hashed_token, @api_token_context),
+            join: user in assoc(token, :user),
+            where: token.inserted_at > ago(^days, "day") and token.sent_to == user.username,
+            select: user
+
+        {:ok, query}
+
+      :error ->
+        :error
+    end
   end
 
   defp build_hashed_token(user, context, sent_to) do
