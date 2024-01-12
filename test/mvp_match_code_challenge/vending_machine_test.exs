@@ -1,23 +1,53 @@
 defmodule MvpMatchCodeChallenge.VendingMachineTest do
-  alias MvpMatchCodeChallenge.Products.Product
-  alias MvpMatchCodeChallenge.Accounts.User
-  alias MvpMatchCodeChallenge.AccountsFixtures
-  alias MvpMatchCodeChallenge.ProductsFixtures
   use MvpMatchCodeChallenge.DataCase, async: true
 
+  import MvpMatchCodeChallenge.AccountsFixtures
+  alias MvpMatchCodeChallenge.ProductsFixtures
+  alias MvpMatchCodeChallenge.Products.Product
+  alias MvpMatchCodeChallenge.Accounts.User
   alias MvpMatchCodeChallenge.VendingMachine
 
-  describe "coin_valid?/1" do
-    test "returns true if coin is valid" do
-      assert VendingMachine.coin_valid?(100) == true
-      assert VendingMachine.coin_valid?(50) == true
-      assert VendingMachine.coin_valid?(20) == true
-      assert VendingMachine.coin_valid?(10) == true
-      assert VendingMachine.coin_valid?(5) == true
+  describe "add_coin_to_user_deposit/2" do
+    setup do
+      %{user: user_fixture(%{role: :buyer})}
     end
 
-    test "returns false if coin is invalid" do
-      assert VendingMachine.coin_valid?(1) == false
+    test "validates coin", %{user: user} do
+      assert {:error, :invalid_coin} =
+               VendingMachine.add_coin_to_user_deposit(user, 2)
+    end
+
+    test "validates whether user is buyer" do
+      user = user_fixture(%{role: :seller})
+
+      assert {:error, :not_implemented} =
+               VendingMachine.add_coin_to_user_deposit(user, 5)
+    end
+
+    test "adds coin to user deposit", %{user: user} do
+      coin = 5
+
+      {:ok, updated_user} = VendingMachine.add_coin_to_user_deposit(user, coin)
+      assert updated_user.deposit == user.deposit + coin
+    end
+  end
+
+  describe "reset_user_deposit/1" do
+    setup do
+      %{user: user_fixture(%{role: :buyer, deposit: 110})}
+    end
+
+    test "validates whether user is buyer" do
+      user = user_fixture(%{role: :seller})
+
+      assert {:error, :not_implemented} =
+               VendingMachine.reset_user_deposit(user)
+    end
+
+    test "resets user deposit", %{user: user} do
+      assert user.deposit == 110
+      {:ok, updated_user} = VendingMachine.reset_user_deposit(user)
+      assert updated_user.deposit == 0
     end
   end
 
@@ -26,7 +56,7 @@ defmodule MvpMatchCodeChallenge.VendingMachineTest do
       product = ProductsFixtures.product_fixture(%{amount_available: 1, cost: 6})
 
       buyer_with_little_deposit =
-        AccountsFixtures.user_fixture(%{
+        user_fixture(%{
           deposit: 5
         })
 
@@ -35,7 +65,7 @@ defmodule MvpMatchCodeChallenge.VendingMachineTest do
     end
 
     test "returns {:error, :out_of_stock} if product is out of stock" do
-      buyer = AccountsFixtures.user_fixture(%{deposit: 100})
+      buyer = user_fixture(%{deposit: 100})
       product = ProductsFixtures.product_fixture(%{amount_available: 1, cost: 10})
 
       assert VendingMachine.buy_product(product, buyer, 2) ==
@@ -44,7 +74,7 @@ defmodule MvpMatchCodeChallenge.VendingMachineTest do
 
     test "returns {:ok, result} if product can be bought" do
       product = ProductsFixtures.product_fixture(%{amount_available: 2, cost: 7})
-      buyer = AccountsFixtures.user_fixture(%{deposit: 100})
+      buyer = user_fixture(%{deposit: 100})
 
       assert VendingMachine.buy_product(product, buyer, 2) ==
                {:ok,

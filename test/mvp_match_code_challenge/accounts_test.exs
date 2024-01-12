@@ -133,50 +133,6 @@ defmodule MvpMatchCodeChallenge.AccountsTest do
     end
   end
 
-  describe "add_coin_to_user_deposit/2" do
-    setup do
-      %{user: user_fixture(%{role: :buyer})}
-    end
-
-    test "validates coin", %{user: user} do
-      assert {:error, :invalid_coin} =
-               Accounts.add_coin_to_user_deposit(user, 2)
-    end
-
-    test "validates whether user is buyer" do
-      user = user_fixture(%{role: :seller})
-
-      assert {:error, :not_implemented} =
-               Accounts.add_coin_to_user_deposit(user, 5)
-    end
-
-    test "adds coin to user deposit", %{user: user} do
-      coin = 5
-
-      {:ok, updated_user} = Accounts.add_coin_to_user_deposit(user, coin)
-      assert updated_user.deposit == user.deposit + coin
-    end
-  end
-
-  describe "reset_user_deposit/1" do
-    setup do
-      %{user: user_fixture(%{role: :buyer, deposit: 110})}
-    end
-
-    test "validates whether user is buyer" do
-      user = user_fixture(%{role: :seller})
-
-      assert {:error, :not_implemented} =
-               Accounts.reset_user_deposit(user)
-    end
-
-    test "resets user deposit", %{user: user} do
-      assert user.deposit == 110
-      {:ok, updated_user} = Accounts.reset_user_deposit(user)
-      assert updated_user.deposit == 0
-    end
-  end
-
   describe "change_user_password/2" do
     test "returns a user changeset" do
       assert %Ecto.Changeset{} = changeset = Accounts.change_user_password(%User{})

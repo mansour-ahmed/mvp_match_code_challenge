@@ -4,9 +4,8 @@ defmodule MvpMatchCodeChallenge.Accounts do
   """
 
   import Ecto.Query, warn: false
-  alias MvpMatchCodeChallenge.VendingMachine
-  alias MvpMatchCodeChallenge.Repo
 
+  alias MvpMatchCodeChallenge.Repo
   alias MvpMatchCodeChallenge.Accounts.{User, UserToken}
 
   ## Database getters
@@ -93,36 +92,10 @@ defmodule MvpMatchCodeChallenge.Accounts do
     User.registration_changeset(user, attrs, hash_password: false, validate_username: false)
   end
 
-  @doc """
-  Adds given coin value to user deposit.
-  Only permitted for users with the `:buyer` role.
-  Only 5, 10, 20, 50, 100 coins are allowed.
-  """
-  def add_coin_to_user_deposit(%User{} = user, coin) when is_integer(coin) do
-    if VendingMachine.coin_valid?(coin) do
-      update_user_deposit(user, %{deposit: coin + user.deposit})
-    else
-      {:error, :invalid_coin}
-    end
-  end
-
-  @doc """
-  Resets the user deposit to zero.
-  Only permitted for users with the `:buyer` role.
-  """
-  def reset_user_deposit(%User{} = user) do
-    update_user_deposit(user, %{deposit: 0})
-  end
-
-  defp update_user_deposit(%User{} = user, attrs) do
-    case user do
-      %{role: :buyer} ->
-        changeset = User.deposit_changeset(user, attrs)
-        Repo.update(changeset)
-
-      _ ->
-        {:error, :not_implemented}
-    end
+  def update_user_deposit(%User{} = user, attrs) do
+    user
+    |> User.deposit_changeset(attrs)
+    |> Repo.update()
   end
 
   ## Settings

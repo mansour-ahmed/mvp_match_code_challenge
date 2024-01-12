@@ -1,6 +1,7 @@
 defmodule MvpMatchCodeChallengeWeb.UserController do
   use MvpMatchCodeChallengeWeb, :controller
 
+  alias MvpMatchCodeChallenge.VendingMachine
   alias MvpMatchCodeChallenge.Accounts
 
   action_fallback MvpMatchCodeChallengeWeb.FallbackController
@@ -50,7 +51,7 @@ defmodule MvpMatchCodeChallengeWeb.UserController do
         {:error, :not_found}
 
       _ ->
-        with {:ok, user} <- Accounts.reset_user_deposit(user) do
+        with {:ok, user} <- VendingMachine.reset_user_deposit(user) do
           render(conn, :show, user: user)
         end
     end
@@ -71,7 +72,7 @@ defmodule MvpMatchCodeChallengeWeb.UserController do
         {:error, :not_found}
 
       _ ->
-        case Accounts.add_coin_to_user_deposit(user, parsed_coin) do
+        case VendingMachine.add_coin_to_user_deposit(user, parsed_coin) do
           {:ok, user} ->
             render(conn, :show, user: user)
 
