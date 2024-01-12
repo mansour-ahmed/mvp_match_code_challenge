@@ -22,7 +22,7 @@ defmodule MvpMatchCodeChallengeWeb.UserControllerTest do
     }
   end
 
-  describe "show" do
+  describe "GET /api/users/:id" do
     test "returns 401 when user is not logged in", %{conn: conn, user: user} do
       conn = get(conn, "/api/users/#{user.id}")
 
@@ -51,7 +51,7 @@ defmodule MvpMatchCodeChallengeWeb.UserControllerTest do
     end
   end
 
-  describe "create" do
+  describe "POST /api/users" do
     test "returns 400 when invalid params are used", %{conn: conn} do
       conn = post(conn, "/api/users", %{})
 
@@ -70,7 +70,7 @@ defmodule MvpMatchCodeChallengeWeb.UserControllerTest do
     end
   end
 
-  describe "delete" do
+  describe "DELETE /api/users/:id" do
     test "returns 401 when user is not logged in", %{conn: conn, user: user} do
       conn = delete(conn, "/api/users/#{user.id}")
 
@@ -99,9 +99,9 @@ defmodule MvpMatchCodeChallengeWeb.UserControllerTest do
     end
   end
 
-  describe "reset_deposit" do
+  describe "PUT /api/user/:id/deposit/reset" do
     test "returns 401 when user is not logged in", %{conn: conn, user: user} do
-      conn = post(conn, "/api/users/#{user.id}/deposit/reset")
+      conn = put(conn, "/api/users/#{user.id}/deposit/reset")
 
       assert response(conn, 401) == "You must use a valid token to access this resource."
     end
@@ -110,7 +110,7 @@ defmodule MvpMatchCodeChallengeWeb.UserControllerTest do
       conn_with_token: conn,
       random_user: random_user
     } do
-      conn = post(conn, "/api/users/#{random_user.id}/deposit/reset")
+      conn = put(conn, "/api/users/#{random_user.id}/deposit/reset")
 
       assert response(conn, 401) == "Not authorized"
     end
@@ -122,25 +122,25 @@ defmodule MvpMatchCodeChallengeWeb.UserControllerTest do
       user_token = ApiTokens.create_user_api_token(seller_user)
       conn_with_token = put_req_header(conn, "authorization", "Bearer #{user_token}")
 
-      conn = post(conn_with_token, "/api/users/#{seller_user.id}/deposit/reset")
+      conn = put(conn_with_token, "/api/users/#{seller_user.id}/deposit/reset")
 
       assert response(conn, 401) == "You must be a buyer to access this resource."
     end
 
     test "returns 401 when user is not found", %{conn_with_token: conn} do
-      conn = post(conn, "/api/users/223232/deposit/reset")
+      conn = put(conn, "/api/users/223232/deposit/reset")
 
       assert response(conn, 401) == "Not authorized"
     end
 
     test "returns 200 when user is found", %{conn_with_token: conn, user: user} do
-      conn = post(conn, "/api/users/#{user.id}/deposit/reset")
+      conn = put(conn, "/api/users/#{user.id}/deposit/reset")
 
       assert %{"deposit" => 0} = json_response(conn, 200)["data"]
     end
   end
 
-  describe "deposit" do
+  describe "POST /api/users/:id/deposit/:coin" do
     test "returns 401 when user is not logged in", %{conn: conn, user: user} do
       conn = post(conn, "/api/users/#{user.id}/deposit/5")
 

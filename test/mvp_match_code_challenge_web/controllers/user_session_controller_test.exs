@@ -96,15 +96,15 @@ defmodule MvpMatchCodeChallengeWeb.UserSessionControllerTest do
     end
   end
 
-  describe "POST /api/users/token" do
+  describe "POST /api/session/token" do
     test "returns 400 when no correct params are sent", %{conn: conn} do
-      conn = post(conn, ~p"/api/users/token", %{})
+      conn = post(conn, ~p"/api/session/token", %{})
       assert json_response(conn, 400)["errors"] == %{"detail" => "Bad Request"}
     end
 
     test "returns 401 when credentials are incorrect", %{conn: conn} do
       conn =
-        post(conn, ~p"/api/users/token", %{
+        post(conn, ~p"/api/session/token", %{
           "user" => %{"username" => "invalid_username", "password" => "invalid_password"}
         })
 
@@ -113,7 +113,7 @@ defmodule MvpMatchCodeChallengeWeb.UserSessionControllerTest do
 
     test "returns user token when credentials are valid", %{conn: conn, user: user} do
       conn =
-        post(conn, ~p"/api/users/token", %{
+        post(conn, ~p"/api/session/token", %{
           "user" => %{"username" => user.username, "password" => valid_user_password()}
         })
 
@@ -144,7 +144,7 @@ defmodule MvpMatchCodeChallengeWeb.UserSessionControllerTest do
     end
   end
 
-  describe "DELETE api/users/log_out/all" do
+  describe "DELETE api/session/log_out/all" do
     setup %{
       conn: conn
     } do
@@ -160,7 +160,7 @@ defmodule MvpMatchCodeChallengeWeb.UserSessionControllerTest do
     end
 
     test "returns 401 when user is not logged in", %{conn: conn} do
-      conn = delete(conn, "/api/users/log_out/all")
+      conn = delete(conn, "/api/session/log_out/all")
 
       assert response(conn, 401) == "You must use a valid token to access this resource."
     end

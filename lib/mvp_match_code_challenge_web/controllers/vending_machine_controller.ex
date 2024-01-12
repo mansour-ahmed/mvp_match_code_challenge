@@ -9,13 +9,10 @@ defmodule MvpMatchCodeChallengeWeb.VendingMachineController do
   def buy(
         %{
           assigns: %{
-            current_user:
-              %{
-                role: :buyer
-              } = current_user
+            current_user: current_user
           }
         } = conn,
-        %{"product_id" => product_id, "amount" => amount}
+        %{"id" => product_id, "amount" => amount}
       ) do
     try do
       product = Products.get_product!(product_id)

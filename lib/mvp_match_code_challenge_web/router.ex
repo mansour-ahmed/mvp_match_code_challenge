@@ -25,37 +25,38 @@ defmodule MvpMatchCodeChallengeWeb.Router do
   scope "/api", MvpMatchCodeChallengeWeb do
     pipe_through :api
 
-    scope "/" do
-      pipe_through [:api_require_authenticated_user, :api_require_buyer_user]
-      post "/buy", VendingMachineController, :buy
+    scope "/users" do
+      post "/", UserController, :create
+
+      scope "/" do
+        pipe_through [:api_require_authenticated_user]
+
+        scope "/:id" do
+          pipe_through [:api_require_user_admin]
+          get "/", UserController, :show
+          delete "/", UserController, :delete
+        end
+
+        scope "/:id" do
+          pipe_through [
+            :api_require_user_admin,
+            :api_require_buyer_user
+          ]
+
+          put "/deposit/reset", UserController, :reset_deposit
+          post "/deposit/:coin", UserController, :deposit
+        end
+      end
     end
 
-    scope "/users" do
-      scope "/" do
-        pipe_through [:api_require_authenticated_user, :api_require_user_admin]
-        get "/:id", UserController, :show
-        delete "/:id", UserController, :delete
-      end
-
-      scope "/" do
-        pipe_through [
-          :api_require_authenticated_user,
-          :api_require_user_admin,
-          :api_require_buyer_user
-        ]
-
-        post "/:id/deposit/reset", UserController, :reset_deposit
-        post "/:id/deposit/:coin", UserController, :deposit
-      end
+    scope "/session" do
+      post "/token", UserSessionController, :create_api_token
 
       scope "/" do
         pipe_through [:api_require_authenticated_user]
 
         delete "/log_out/all", UserSessionController, :delete_all_tokens
       end
-
-      post "/", UserController, :create
-      post "/token", UserSessionController, :create_api_token
     end
 
     scope "/products" do
@@ -63,14 +64,23 @@ defmodule MvpMatchCodeChallengeWeb.Router do
       get "/:id", ProductController, :show
 
       scope "/" do
-        pipe_through [:api_require_authenticated_user, :api_require_seller_user]
-        post "/", ProductController, :create
-      end
+        pipe_through [:api_require_authenticated_user]
 
-      scope "/:id" do
-        pipe_through [:api_require_authenticated_user, :api_require_product_seller]
-        put "/", ProductController, :update
-        delete "/", ProductController, :delete
+        scope "/" do
+          pipe_through [:api_require_seller_user]
+          post "/", ProductController, :create
+        end
+
+        scope "/:id" do
+          pipe_through [:api_require_product_seller]
+          put "/", ProductController, :update
+          delete "/", ProductController, :delete
+        end
+
+        scope "/:id" do
+          pipe_through [:api_require_buyer_user]
+          post "/buy", VendingMachineController, :buy
+        end
       end
     end
   end

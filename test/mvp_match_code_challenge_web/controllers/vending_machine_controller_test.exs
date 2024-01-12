@@ -22,11 +22,10 @@ defmodule MvpMatchCodeChallengeWeb.VendingMachineControllerTest do
     }
   end
 
-  describe "buy" do
+  describe "POST /products/:id" do
     test "renders errors when user is not logged in", %{conn: conn, product: product} do
       conn =
-        post(conn, ~p"/api/buy", %{
-          product_id: product.id,
+        post(conn, ~p"/api/products/#{product.id}/buy", %{
           amount: 1
         })
 
@@ -35,8 +34,7 @@ defmodule MvpMatchCodeChallengeWeb.VendingMachineControllerTest do
 
     test "renders errors when product is not found", %{conn_with_token: conn} do
       conn =
-        post(conn, ~p"/api/buy", %{
-          product_id: -1,
+        post(conn, ~p"/api/products/-1/buy", %{
           amount: 1
         })
 
@@ -49,8 +47,7 @@ defmodule MvpMatchCodeChallengeWeb.VendingMachineControllerTest do
       conn_with_token = put_req_header(conn, "authorization", "Bearer #{user_token}")
 
       conn =
-        post(conn_with_token, ~p"/api/buy", %{
-          product_id: product.id,
+        post(conn_with_token, ~p"/api/products/#{product.id}/buy", %{
           amount: 1
         })
 
@@ -59,8 +56,7 @@ defmodule MvpMatchCodeChallengeWeb.VendingMachineControllerTest do
 
     test "renders transaction when product is found", %{conn_with_token: conn, product: product} do
       conn =
-        post(conn, ~p"/api/buy", %{
-          product_id: product.id,
+        post(conn, ~p"/api/products/#{product.id}/buy", %{
           amount: 1
         })
 
