@@ -128,5 +128,23 @@ defmodule MvpMatchCodeChallenge.Accounts.UserToken do
     from t in UserToken, where: t.user_id == ^user.id and t.context in ^contexts
   end
 
+  @doc """
+  Gets API and session valid tokens count for the given user.
+  """
+  def by_user_and_valid_tokens_count_query(user) do
+    from t in UserToken,
+      where: t.user_id == ^user.id,
+      where:
+        (t.context == ^@session_token_context and
+           t.inserted_at > ago(^@session_validity_in_days, "day")) or
+          (t.context == ^@api_token_context and
+             t.inserted_at > ago(^@api_token_validity_in_days, "day")),
+      group_by: t.context,
+      select: {t.context, count(t.id)}
+  end
+
   def get_session_validity_in_days(), do: @session_validity_in_days
+
+  def get_session_token_context(), do: @session_token_context
+  def get_api_token_context(), do: @api_token_context
 end

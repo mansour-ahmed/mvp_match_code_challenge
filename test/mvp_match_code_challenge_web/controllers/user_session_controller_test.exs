@@ -99,7 +99,7 @@ defmodule MvpMatchCodeChallengeWeb.UserSessionControllerTest do
   describe "POST /api/users/token" do
     test "returns 400 when no correct params are sent", %{conn: conn} do
       conn = post(conn, ~p"/api/users/token", %{})
-      assert response(conn, 400) == "Invalid params"
+      assert json_response(conn, 400)["errors"] == %{"detail" => "Bad Request"}
     end
 
     test "returns 401 when credentials are incorrect", %{conn: conn} do
@@ -117,7 +117,10 @@ defmodule MvpMatchCodeChallengeWeb.UserSessionControllerTest do
           "user" => %{"username" => user.username, "password" => valid_user_password()}
         })
 
-      assert response(conn, 200)
+      assert %{
+               "tokens_count" =>
+                 "You have 1 active API tokens and 0 web sessions. You can log out of all sessions by visiting api/users/log_out/all"
+             } = json_response(conn, 200)["data"]
     end
   end
 

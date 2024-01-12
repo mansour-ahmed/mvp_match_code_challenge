@@ -354,6 +354,39 @@ defmodule MvpMatchCodeChallenge.AccountsTest do
     end
   end
 
+  describe "get_user_active_tokens_count/2" do
+    test "returns the number of active tokens for the given user" do
+      user = user_fixture()
+
+      assert Accounts.get_user_active_tokens_count(user) == %{
+               session_token_count: 0,
+               api_token_count: 0
+             }
+
+      Accounts.generate_user_session_token(user)
+
+      assert Accounts.get_user_active_tokens_count(user) == %{
+               session_token_count: 1,
+               api_token_count: 0
+             }
+
+      Accounts.create_user_api_token(user)
+      Accounts.create_user_api_token(user)
+
+      assert Accounts.get_user_active_tokens_count(user) == %{
+               session_token_count: 1,
+               api_token_count: 2
+             }
+
+      {3, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
+
+      assert Accounts.get_user_active_tokens_count(user) == %{
+               session_token_count: 0,
+               api_token_count: 0
+             }
+    end
+  end
+
   describe "create_user_api_token/1" do
     test "creates a token" do
       user = user_fixture()

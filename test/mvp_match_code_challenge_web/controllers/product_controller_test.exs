@@ -61,8 +61,7 @@ defmodule MvpMatchCodeChallengeWeb.ProductControllerTest do
     end
 
     test "renders errors when user is not seller", %{
-      conn: conn,
-      random_product: product
+      conn: conn
     } do
       user = AccountsFixtures.user_fixture(%{role: :buyer})
       user_token = Accounts.create_user_api_token(user)

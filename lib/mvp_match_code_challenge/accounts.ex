@@ -218,6 +218,25 @@ defmodule MvpMatchCodeChallenge.Accounts do
     :ok
   end
 
+  @doc """
+  Gets the number of active api and session tokens for the given user.
+  """
+  def get_user_active_tokens_count(user) do
+    results = Repo.all(UserToken.by_user_and_valid_tokens_count_query(user))
+
+    session_token_context = UserToken.get_session_token_context()
+    api_token_context = UserToken.get_api_token_context()
+    default_count = %{session_token_count: 0, api_token_count: 0}
+
+    Enum.reduce(results, default_count, fn
+      {context, count}, acc ->
+        case context do
+          ^session_token_context -> Map.put(acc, :session_token_count, count)
+          ^api_token_context -> Map.put(acc, :api_token_count, count)
+        end
+    end)
+  end
+
   ## API
 
   @doc """

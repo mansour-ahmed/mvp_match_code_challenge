@@ -21,26 +21,6 @@ defmodule MvpMatchCodeChallengeWeb.UserSessionController do
     create(conn, params, "Welcome back!")
   end
 
-  def create_api_token(conn, %{"user" => user_params}) do
-    %{"username" => username, "password" => password} = user_params
-
-    if user = Accounts.get_user_by_username_and_password(username, password) do
-      token = Accounts.create_user_api_token(user)
-
-      conn
-      |> send_resp(:ok, token)
-    else
-      # In order to prevent user enumeration attacks, don't disclose whether the username is registered.
-      conn
-      |> send_resp(:unauthorized, "Invalid username or password")
-    end
-  end
-
-  def create_api_token(conn, _params) do
-    conn
-    |> send_resp(:bad_request, "Invalid params")
-  end
-
   defp create(conn, %{"user" => user_params}, info) do
     %{"username" => username, "password" => password} = user_params
 
@@ -63,6 +43,33 @@ defmodule MvpMatchCodeChallengeWeb.UserSessionController do
     |> UserAuth.log_out_user()
   end
 
+  def create_api_token(conn, %{"user" => user_params}) do
+    %{"username" => username, "password" => password} = user_params
+
+    if user = Accounts.get_user_by_username_and_password(username, password) do
+      token = Accounts.create_user_api_token(user)
+
+      %{api_token_count: api_token_count, session_token_count: session_token_count} =
+        Accounts.get_user_active_tokens_count(user)
+
+      conn
+      |> put_status(:ok)
+      |> json(%{
+        data: %{
+          token: token,
+          tokens_count:
+            "You have #{api_token_count} active API tokens and #{session_token_count} web sessions. You can log out of all sessions by visiting api/users/log_out/all"
+        }
+      })
+    else
+      # In order to prevent user enumeration attacks, don't disclose whether the username is registered.
+      conn
+      |> send_resp(:unauthorized, "Invalid username or password")
+    end
+  end
+
+  def create_api_token(_conn, _params), do: {:error, :bad_request}
+
   def delete_all_tokens(
         %{
           assigns: %{
@@ -71,11 +78,18 @@ defmodule MvpMatchCodeChallengeWeb.UserSessionController do
         } = conn,
         _params
       ) do
-    if :ok == Accounts.delete_all_user_tokens(current_user) do
+    try do
+      Accounts.delete_all_user_tokens(current_user)
+
       conn
-      |> send_resp(204, "")
-    else
-      {:error, :internal_server_error}
+      |> put_status(:ok)
+      |> json(%{
+        data: %{
+          message: "All tokens have been deleted."
+        }
+      })
+    rescue
+      _ -> {:error, :internal_server_error}
     end
   end
 end
