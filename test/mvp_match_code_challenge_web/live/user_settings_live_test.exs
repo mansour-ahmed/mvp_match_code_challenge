@@ -76,7 +76,7 @@ defmodule MvpMatchCodeChallengeWeb.UserSettingsLiveTest do
 
       assert result =~ "Change Password"
       assert result =~ "should be at least 12 character(s)"
-      assert result =~ "does not match password"
+      assert result =~ "password confirmation does not match"
     end
 
     test "renders errors with invalid data (phx-submit)", %{conn: conn} do
@@ -95,8 +95,8 @@ defmodule MvpMatchCodeChallengeWeb.UserSettingsLiveTest do
 
       assert result =~ "Change Password"
       assert result =~ "should be at least 12 character(s)"
-      assert result =~ "does not match password"
-      assert result =~ "is not valid"
+      assert result =~ "password confirmation does not match"
+      assert result =~ "current password is incorrect"
     end
   end
 end

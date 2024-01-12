@@ -34,16 +34,14 @@ defmodule MvpMatchCodeChallenge.Accounts.UserToken do
   salt.
 
   Therefore, storing them allows individual user
-  sessions to be expired. The token system can also be extended
-  to store additional data, such as the device used for logging in.
-  You could then use this information to display all valid sessions
-  and devices in the UI and allow users to explicitly expire any
-  session they deem invalid.
+  sessions to be expired.
   """
   def build_session_token(user) do
-    token = :crypto.strong_rand_bytes(@rand_size)
+    token = generate_token()
     {token, %UserToken{token: token, context: @session_token_context, user_id: user.id}}
   end
+
+  defp generate_token(), do: :crypto.strong_rand_bytes(@rand_size)
 
   @doc """
   Checks if the token is valid and returns its underlying lookup query.
@@ -64,9 +62,9 @@ defmodule MvpMatchCodeChallenge.Accounts.UserToken do
   end
 
   @doc """
-  Builds a token and its hash to be returned to the user.
+  Builds an API token and its hash to be returned to the user.
 
-  The non-hashed token is sent to the user while the
+    The non-hashed token is sent to the user while the
   hashed part is stored in the database. The original token cannot be reconstructed,
   which means anyone with read-only access to the database cannot directly use
   the token in the application to gain access. Furthermore, if the user changes
@@ -77,6 +75,9 @@ defmodule MvpMatchCodeChallenge.Accounts.UserToken do
     build_hashed_token(user, @api_token_context, user.username)
   end
 
+  @doc """
+  Verifies the API token and returns a query for the associated user.
+  """
   def verify_api_token_query(token) do
     case Base.url_decode64(token, padding: false) do
       {:ok, decoded_token} ->
@@ -97,7 +98,7 @@ defmodule MvpMatchCodeChallenge.Accounts.UserToken do
   end
 
   defp build_hashed_token(user, context, sent_to) do
-    token = :crypto.strong_rand_bytes(@rand_size)
+    token = generate_token()
     hashed_token = :crypto.hash(@hash_algorithm, token)
 
     {Base.url_encode64(token, padding: false),
@@ -110,14 +111,14 @@ defmodule MvpMatchCodeChallenge.Accounts.UserToken do
   end
 
   @doc """
-  Returns the token struct for the given token value and context.
+  Returns a query for finding a user token by its value and context.
   """
   def by_token_and_context_query(token, context) do
     from UserToken, where: [token: ^token, context: ^context]
   end
 
   @doc """
-  Gets all tokens for the given user for the given contexts.
+  Returns a query for finding all tokens of a user.
   """
   def by_user_and_contexts_query(user, :all) do
     from t in UserToken, where: t.user_id == ^user.id
@@ -128,7 +129,7 @@ defmodule MvpMatchCodeChallenge.Accounts.UserToken do
   end
 
   @doc """
-  Gets API and session valid tokens count for the given user.
+  Counts valid API and session tokens for a user.
   """
   def by_user_and_valid_tokens_count_query(user) do
     from t in UserToken,
@@ -143,7 +144,6 @@ defmodule MvpMatchCodeChallenge.Accounts.UserToken do
   end
 
   def get_session_validity_in_days(), do: @session_validity_in_days
-
   def get_session_token_context(), do: @session_token_context
   def get_api_token_context(), do: @api_token_context
 end

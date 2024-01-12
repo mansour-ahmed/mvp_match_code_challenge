@@ -31,7 +31,7 @@ defmodule MvpMatchCodeChallengeWeb.UserRegistrationLiveTest do
         |> render_change(user: %{"username" => "with spaces", "password" => "too short"})
 
       assert result =~ "Register"
-      assert result =~ "must have no spaces"
+      assert result =~ "must not contain spaces"
       assert result =~ "should be at least 12 character"
     end
   end

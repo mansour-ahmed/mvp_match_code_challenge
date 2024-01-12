@@ -4,6 +4,9 @@ defmodule MvpMatchCodeChallenge.Products.Product do
   import Ecto.Changeset
 
   @valid_schema_fields ~w(amount_available cost product_name seller_id)a
+  @max_product_name_length 1000
+  @max_amount 1_000_000
+  @max_cost 100_000_000
 
   schema "products" do
     field :amount_available, :integer
@@ -57,7 +60,7 @@ defmodule MvpMatchCodeChallenge.Products.Product do
     |> validate_required([:amount_available])
     |> validate_number(:amount_available,
       greater_than_or_equal_to: 0,
-      less_than_or_equal_to: 1_000_000
+      less_than_or_equal_to: @max_amount
     )
   end
 
@@ -66,14 +69,14 @@ defmodule MvpMatchCodeChallenge.Products.Product do
     |> validate_required([:cost])
     |> validate_number(:cost,
       greater_than: 0,
-      less_than_or_equal_to: 100_000_000
+      less_than_or_equal_to: @max_cost
     )
   end
 
   defp validate_product_name(changeset) do
     changeset
     |> validate_required([:product_name])
-    |> validate_length(:product_name, min: 1, max: 1000)
+    |> validate_length(:product_name, min: 1, max: @max_product_name_length)
     |> unique_constraint(:product_name)
   end
 end

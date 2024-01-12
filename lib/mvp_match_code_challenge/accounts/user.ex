@@ -4,10 +4,12 @@ defmodule MvpMatchCodeChallenge.Accounts.User do
 
   @valid_roles [:buyer, :seller]
   @valid_schema_fields ~w(username password deposit role)a
+  @max_username_length 160
+  @min_password_length 12
+  @max_password_length 72
 
   schema "users" do
     field :username, :string
-    # Redact fields to prevent accidental password logging
     field :hashed_password, :string, redact: true
     field :password, :string, virtual: true, redact: true
     field :deposit, :integer, default: 0
@@ -51,19 +53,23 @@ defmodule MvpMatchCodeChallenge.Accounts.User do
   defp validate_username(changeset, opts) do
     changeset
     |> validate_required([:username])
-    |> validate_format(:username, ~r/^[^\s]+$/, message: "must have no spaces")
-    |> validate_length(:username, max: 160)
+    |> validate_format(:username, ~r/^[^\s]+$/, message: "must not contain spaces")
+    |> validate_length(:username, max: @max_username_length)
     |> maybe_validate_unique_username(opts)
   end
 
   defp validate_password(changeset, opts) do
     changeset
     |> validate_required([:password])
-    |> validate_length(:password, min: 12, max: 72)
-    |> validate_format(:password, ~r/[a-z]/, message: "at least one lower case character")
-    |> validate_format(:password, ~r/[A-Z]/, message: "at least one upper case character")
+    |> validate_length(:password, min: @min_password_length, max: @max_password_length)
+    |> validate_format(:password, ~r/[a-z]/,
+      message: "must include at least one lowercase character"
+    )
+    |> validate_format(:password, ~r/[A-Z]/,
+      message: "must include at least one uppercase character"
+    )
     |> validate_format(:password, ~r/[!?@#$%^&*_0-9]/,
-      message: "at least one digit or punctuation character"
+      message: "must include at least one digit or special character (e.g., !, @, #)"
     )
     |> maybe_hash_password(opts)
   end
@@ -77,7 +83,9 @@ defmodule MvpMatchCodeChallenge.Accounts.User do
   defp validate_role(changeset) do
     changeset
     |> validate_required([:role])
-    |> validate_inclusion(:role, @valid_roles, message: "invalid role")
+    |> validate_inclusion(:role, @valid_roles,
+      message: "must be one of these values: #{@valid_roles |> Enum.join(", ")}"
+    )
   end
 
   defp maybe_hash_password(changeset, opts) do
@@ -116,7 +124,7 @@ defmodule MvpMatchCodeChallenge.Accounts.User do
     |> validate_username(opts)
     |> case do
       %{changes: %{username: _}} = changeset -> changeset
-      %{} = changeset -> add_error(changeset, :username, "did not change")
+      %{} = changeset -> add_error(changeset, :username, "has not been changed")
     end
   end
 
@@ -135,7 +143,7 @@ defmodule MvpMatchCodeChallenge.Accounts.User do
   def password_changeset(user, attrs, opts \\ []) do
     user
     |> cast(attrs, [:password])
-    |> validate_confirmation(:password, message: "does not match password")
+    |> validate_confirmation(:password, message: "password confirmation does not match")
     |> validate_password(opts)
   end
 
@@ -174,7 +182,7 @@ defmodule MvpMatchCodeChallenge.Accounts.User do
     if valid_password?(changeset.data, password) do
       changeset
     else
-      add_error(changeset, :current_password, "is not valid")
+      add_error(changeset, :current_password, "current password is incorrect")
     end
   end
 end

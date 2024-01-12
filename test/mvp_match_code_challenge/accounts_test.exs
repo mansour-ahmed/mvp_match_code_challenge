@@ -61,10 +61,10 @@ defmodule MvpMatchCodeChallenge.AccountsTest do
         Accounts.register_user(%{username: "not valid", password: "not valid"})
 
       assert %{
-               username: ["must have no spaces"],
+               username: ["must not contain spaces"],
                password: [
-                 "at least one digit or punctuation character",
-                 "at least one upper case character",
+                 "must include at least one digit or special character (e.g., !, @, #)",
+                 "must include at least one uppercase character",
                  "should be at least 12 character(s)"
                ]
              } = errors_on(changeset)
@@ -211,11 +211,11 @@ defmodule MvpMatchCodeChallenge.AccountsTest do
 
       assert %{
                password: [
-                 "at least one digit or punctuation character",
-                 "at least one upper case character",
+                 "must include at least one digit or special character (e.g., !, @, #)",
+                 "must include at least one uppercase character",
                  "should be at least 12 character(s)"
                ],
-               password_confirmation: ["does not match password"]
+               password_confirmation: ["password confirmation does not match"]
              } = errors_on(changeset)
     end
 
@@ -232,7 +232,7 @@ defmodule MvpMatchCodeChallenge.AccountsTest do
       {:error, changeset} =
         Accounts.update_user_password(user, "invalid", %{password: valid_user_password()})
 
-      assert %{current_password: ["is not valid"]} = errors_on(changeset)
+      assert %{current_password: ["current password is incorrect"]} = errors_on(changeset)
     end
 
     test "updates the password", %{user: user} do
