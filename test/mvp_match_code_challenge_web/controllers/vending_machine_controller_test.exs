@@ -3,13 +3,13 @@ defmodule MvpMatchCodeChallengeWeb.VendingMachineControllerTest do
 
   import MvpMatchCodeChallenge.ProductsFixtures
   import MvpMatchCodeChallenge.AccountsFixtures
-  alias MvpMatchCodeChallenge.Accounts
+  alias MvpMatchCodeChallenge.ApiTokens
 
   setup %{
     conn: conn
   } do
     user = user_fixture(%{role: :buyer, deposit: 100})
-    user_token = Accounts.create_user_api_token(user)
+    user_token = ApiTokens.create_user_api_token(user)
     product = product_fixture(%{amount_available: 5, cost: 10})
     conn_with_token = put_req_header(conn, "authorization", "Bearer #{user_token}")
 
@@ -45,7 +45,7 @@ defmodule MvpMatchCodeChallengeWeb.VendingMachineControllerTest do
 
     test "allows only buyers to buy products", %{conn: conn, product: product} do
       user = user_fixture(%{role: :seller})
-      user_token = Accounts.create_user_api_token(user)
+      user_token = ApiTokens.create_user_api_token(user)
       conn_with_token = put_req_header(conn, "authorization", "Bearer #{user_token}")
 
       conn =

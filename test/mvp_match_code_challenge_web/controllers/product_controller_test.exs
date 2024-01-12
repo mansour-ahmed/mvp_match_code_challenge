@@ -2,16 +2,14 @@ defmodule MvpMatchCodeChallengeWeb.ProductControllerTest do
   use MvpMatchCodeChallengeWeb.ConnCase, async: true
 
   import MvpMatchCodeChallenge.ProductsFixtures
-
-  alias MvpMatchCodeChallenge.AccountsFixtures
-  alias MvpMatchCodeChallenge.Accounts
+  alias MvpMatchCodeChallenge.{ApiTokens, AccountsFixtures}
   alias MvpMatchCodeChallenge.Products.Product
 
   setup %{
     conn: conn
   } do
     user = AccountsFixtures.user_fixture(%{role: :seller})
-    user_token = Accounts.create_user_api_token(user)
+    user_token = ApiTokens.create_user_api_token(user)
     product = product_fixture(%{seller_id: user.id})
     random_product = product_fixture()
 
@@ -63,7 +61,7 @@ defmodule MvpMatchCodeChallengeWeb.ProductControllerTest do
       conn: conn
     } do
       user = AccountsFixtures.user_fixture(%{role: :buyer})
-      user_token = Accounts.create_user_api_token(user)
+      user_token = ApiTokens.create_user_api_token(user)
       conn_with_token = put_req_header(conn, "authorization", "Bearer #{user_token}")
 
       conn =

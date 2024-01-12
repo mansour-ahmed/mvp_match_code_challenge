@@ -4,8 +4,7 @@ defmodule MvpMatchCodeChallengeWeb.UserAuth do
   import Plug.Conn
   import Phoenix.Controller
 
-  alias MvpMatchCodeChallenge.Products
-  alias MvpMatchCodeChallenge.Accounts
+  alias MvpMatchCodeChallenge.{ApiTokens, Accounts, Products}
   alias MvpMatchCodeChallenge.Accounts.UserToken
 
   @max_age 60 * 60 * 24 * UserToken.get_session_validity_in_days()
@@ -109,7 +108,7 @@ defmodule MvpMatchCodeChallengeWeb.UserAuth do
 
   def fetch_api_user(conn, _opts) do
     with ["Bearer " <> token] <- get_req_header(conn, "authorization"),
-         {:ok, user} <- Accounts.fetch_user_by_api_token(token) do
+         {:ok, user} <- ApiTokens.fetch_user_by_api_token(token) do
       assign(conn, :current_user, user)
     else
       _ ->

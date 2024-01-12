@@ -1,7 +1,7 @@
 defmodule MvpMatchCodeChallengeWeb.UserSessionController do
   use MvpMatchCodeChallengeWeb, :controller
 
-  alias MvpMatchCodeChallenge.Accounts
+  alias MvpMatchCodeChallenge.{ApiTokens, Accounts}
   alias MvpMatchCodeChallengeWeb.UserAuth
 
   action_fallback MvpMatchCodeChallengeWeb.FallbackController
@@ -46,10 +46,10 @@ defmodule MvpMatchCodeChallengeWeb.UserSessionController do
     %{"username" => username, "password" => password} = user_params
 
     if user = Accounts.get_user_by_username_and_password(username, password) do
-      token = Accounts.create_user_api_token(user)
+      token = ApiTokens.create_user_api_token(user)
 
       %{api_token_count: api_token_count, session_token_count: session_token_count} =
-        Accounts.get_user_active_tokens_count(user)
+        ApiTokens.get_user_active_tokens_count(user)
 
       conn
       |> put_status(:ok)
@@ -78,7 +78,7 @@ defmodule MvpMatchCodeChallengeWeb.UserSessionController do
         _params
       ) do
     try do
-      Accounts.delete_all_user_tokens(current_user)
+      ApiTokens.delete_all_user_tokens(current_user)
 
       conn
       |> put_status(:ok)

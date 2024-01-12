@@ -2,9 +2,8 @@ defmodule MvpMatchCodeChallengeWeb.UserAuthTest do
   use MvpMatchCodeChallengeWeb.ConnCase, async: true
 
   alias Phoenix.LiveView
-  alias MvpMatchCodeChallenge.Accounts
+  alias MvpMatchCodeChallenge.{Accounts, ApiTokens, ProductsFixtures}
   alias MvpMatchCodeChallengeWeb.UserAuth
-  alias MvpMatchCodeChallenge.ProductsFixtures
   import MvpMatchCodeChallenge.AccountsFixtures
 
   @remember_me_cookie "_mvp_match_code_challenge_web_user_remember_me"
@@ -146,7 +145,7 @@ defmodule MvpMatchCodeChallengeWeb.UserAuthTest do
 
   describe "fetch_api_user/2" do
     test "authenticates user from api token", %{conn: conn, user: user} do
-      api_token = Accounts.create_user_api_token(user)
+      api_token = ApiTokens.create_user_api_token(user)
 
       conn =
         conn

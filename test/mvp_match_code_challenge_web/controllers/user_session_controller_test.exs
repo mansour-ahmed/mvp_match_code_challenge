@@ -1,8 +1,8 @@
 defmodule MvpMatchCodeChallengeWeb.UserSessionControllerTest do
-  alias MvpMatchCodeChallenge.Accounts
   use MvpMatchCodeChallengeWeb.ConnCase, async: true
 
   import MvpMatchCodeChallenge.AccountsFixtures
+  alias MvpMatchCodeChallenge.ApiTokens
 
   setup do
     %{user: user_fixture()}
@@ -149,7 +149,7 @@ defmodule MvpMatchCodeChallengeWeb.UserSessionControllerTest do
       conn: conn
     } do
       user = user_fixture(%{role: :buyer, deposit: 100})
-      user_token = Accounts.create_user_api_token(user)
+      user_token = ApiTokens.create_user_api_token(user)
 
       conn_with_token = put_req_header(conn, "authorization", "Bearer #{user_token}")
 
