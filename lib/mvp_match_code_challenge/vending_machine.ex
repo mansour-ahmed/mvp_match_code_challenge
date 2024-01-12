@@ -1,44 +1,41 @@
 defmodule MvpMatchCodeChallenge.VendingMachine do
-  alias MvpMatchCodeChallenge.Repo
   alias MvpMatchCodeChallenge.Products.Product
   alias MvpMatchCodeChallenge.Accounts.User
-  alias MvpMatchCodeChallenge.Accounts
+  alias MvpMatchCodeChallenge.{Repo, Accounts}
+  alias Decimal, as: D
 
   @valid_coins [100, 50, 20, 10, 5]
 
   @doc """
-  Adds a specified coin value to a user's deposit. Only valid for users with
-  the `:buyer` role and when using valid coin denominations.
+  Adds a specified coin value to given user's deposit.
+  Valid only for users with the `:buyer` role and when using valid coin denominations.
   """
   def add_coin_to_user_deposit(%User{role: :buyer} = user, coin) when is_integer(coin) do
-    if coin_valid?(coin) do
-      user
-      |> Accounts.update_user_deposit(%{deposit: coin + user.deposit})
+    if Enum.member?(@valid_coins, coin) do
+      user |> Accounts.update_user_deposit(%{deposit: coin + user.deposit})
     else
       {:error, :invalid_coin}
     end
   end
 
-  def add_coin_to_user_deposit(_, _coin), do: {:error, :not_implemented}
-
-  defp coin_valid?(coin) do
-    Enum.member?(@valid_coins, coin)
-  end
+  def add_coin_to_user_deposit(_, _), do: {:error, :not_a_buyer}
 
   @doc """
-  Resets the user's deposit to zero. This action is only permitted for users
-  with the `:buyer` role.
+  Resets the user's deposit to zero. Permitted only for users with the `:buyer` role.
   """
-  def reset_user_deposit(%User{role: :buyer} = user) do
-    user
-    |> Accounts.update_user_deposit(%{deposit: 0})
-  end
+  def reset_user_deposit(%User{role: :buyer} = user),
+    do: user |> Accounts.update_user_deposit(%{deposit: 0})
 
-  def reset_user_deposit(_), do: {:error, :not_implemented}
+  def reset_user_deposit(_), do: {:error, :not_a_buyer}
 
-  def buy_product(%Product{} = product, %User{} = buyer, products_amount) do
-    total_product_cost = Decimal.mult(product.cost, products_amount)
-    buyer_balance = buyer.deposit |> Decimal.new()
+  @doc """
+  Handles the purchase of products by given user.
+  Verifies fund sufficiency, stock availability, and calculates the change to be returned.
+  """
+  def buy_product(%Product{} = product, %User{} = buyer, products_amount)
+      when is_integer(products_amount) do
+    total_product_cost = D.mult(product.cost, products_amount)
+    buyer_balance = D.new(buyer.deposit)
 
     cond do
       buyer_balance < total_product_cost ->
@@ -48,70 +45,66 @@ defmodule MvpMatchCodeChallenge.VendingMachine do
         {:error, :out_of_stock}
 
       true ->
-        {_, change_in_coins} = get_change_in_coins(buyer_balance, total_product_cost)
-        buyer_new_balance = change_in_coins |> sum_up_coins
-        product_new_amount_available = product.amount_available - products_amount
-
-        Ecto.Multi.new()
-        |> Ecto.Multi.update(:buyer, User.deposit_changeset(buyer, %{deposit: buyer_new_balance}))
-        |> Ecto.Multi.update(
-          :product,
-          Product.amount_available_changeset(product, %{
-            amount_available: product_new_amount_available
-          })
+        buy_product_transaction(
+          buyer_balance,
+          total_product_cost,
+          buyer,
+          product,
+          products_amount
         )
-        |> Repo.transaction()
-        |> case do
-          {:ok, %{product: product}} ->
-            {:ok,
-             %{
-               product: product,
-               total_cost_to_buyer:
-                 buyer_balance
-                 |> Decimal.sub(buyer_new_balance)
-                 |> Decimal.to_integer(),
-               change_after_transaction_in_coins: change_in_coins
-             }}
-
-          {:error, _} ->
-            {:error, :transaction_failed}
-        end
     end
   end
 
-  defp sum_up_coins(coins) do
-    Enum.reduce(coins, 0, fn coin, sum -> sum + coin end)
+  defp buy_product_transaction(balance, total_cost, buyer, product, products_amount) do
+    {_, change_coins} = calculate_change(balance, total_cost)
+    new_balance = Enum.sum(change_coins)
+    new_amount_available = product.amount_available - products_amount
+
+    total_cost_after_transaction =
+      balance
+      |> Decimal.sub(new_balance)
+      |> Decimal.to_integer()
+
+    Ecto.Multi.new()
+    |> Ecto.Multi.update(:buyer, User.deposit_changeset(buyer, %{deposit: new_balance}))
+    |> Ecto.Multi.update(
+      :product,
+      Product.amount_available_changeset(product, %{amount_available: new_amount_available})
+    )
+    |> Repo.transaction()
+    |> transaction_result(total_cost_after_transaction, change_coins)
   end
 
-  defp get_change_in_coins(amount, total_cost) do
-    total_change = Decimal.sub(amount, total_cost)
-
-    get_valid_coins_desc()
-    |> Enum.reduce({total_change, []}, fn coin, {remaining, coins_list} ->
-      coin_is_too_large = remaining < coin
-
-      if coin_is_too_large do
-        {remaining, coins_list}
-      else
-        count =
-          remaining
-          |> Decimal.div(coin)
-          |> Decimal.round(0, :down)
-          |> Decimal.to_integer()
-
-        new_remaining =
-          remaining
-          |> Decimal.rem(coin)
-          |> Decimal.round(0, :down)
-          |> Decimal.to_integer()
-
-        {new_remaining, coins_list ++ List.duplicate(coin, count)}
-      end
-    end)
+  defp transaction_result({:ok, %{product: product}}, total_cost_after_transaction, change_coins) do
+    {:ok,
+     %{
+       product: product,
+       total_cost_to_buyer: total_cost_after_transaction,
+       change_after_transaction_in_coins: change_coins
+     }}
   end
 
-  defp get_valid_coins_desc() do
-    @valid_coins
-    |> Enum.sort(fn coin1, coin2 -> coin2 < coin1 end)
+  defp transaction_result({:error, _}, _, _), do: {:error, :transaction_failed}
+
+  defp calculate_change(amount, total_cost) do
+    change = D.sub(amount, total_cost)
+    Enum.reduce(descending_valid_coins(), {change, []}, &accumulate_change/2)
   end
+
+  defp accumulate_change(coin, {remaining, coins_list}) do
+    if remaining < D.new(coin) do
+      {remaining, coins_list}
+    else
+      count =
+        remaining
+        |> D.div(D.new(coin))
+        |> D.round(0, :down)
+        |> D.to_integer()
+
+      new_remaining = D.rem(remaining, D.new(coin))
+      {new_remaining, coins_list ++ List.duplicate(coin, count)}
+    end
+  end
+
+  defp descending_valid_coins, do: Enum.sort(@valid_coins, &(&2 < &1))
 end

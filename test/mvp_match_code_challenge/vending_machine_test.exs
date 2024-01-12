@@ -20,7 +20,7 @@ defmodule MvpMatchCodeChallenge.VendingMachineTest do
     test "validates whether user is buyer" do
       user = user_fixture(%{role: :seller})
 
-      assert {:error, :not_implemented} =
+      assert {:error, :not_a_buyer} =
                VendingMachine.add_coin_to_user_deposit(user, 5)
     end
 
@@ -40,7 +40,7 @@ defmodule MvpMatchCodeChallenge.VendingMachineTest do
     test "validates whether user is buyer" do
       user = user_fixture(%{role: :seller})
 
-      assert {:error, :not_implemented} =
+      assert {:error, :not_a_buyer} =
                VendingMachine.reset_user_deposit(user)
     end
 

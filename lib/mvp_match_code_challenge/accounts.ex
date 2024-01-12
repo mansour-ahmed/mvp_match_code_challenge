@@ -1,77 +1,42 @@
 defmodule MvpMatchCodeChallenge.Accounts do
   @moduledoc """
-  The Accounts context.
+  The Accounts context for managing user operations.
+  Handles user registration, authentication, and session management.
   """
 
   import Ecto.Query, warn: false
-
   alias MvpMatchCodeChallenge.Repo
   alias MvpMatchCodeChallenge.Accounts.{User, UserToken}
 
   ## Database getters
 
   @doc """
-  Gets a user by username.
-
-  ## Examples
-
-      iex> get_user_by_username("foo123")
-      %User{}
-
-      iex> get_user_by_username("unknown")
-      nil
-
+  Gets a user by their username.
   """
   def get_user_by_username(username) when is_binary(username) do
     Repo.get_by(User, username: username)
   end
 
   @doc """
-  Gets a user by username and password.
-
-  ## Examples
-
-      iex> get_user_by_username_and_password("foo123", "correct_password")
-      %User{}
-
-      iex> get_user_by_username_and_password("foo123", "invalid_password")
-      nil
-
+  Gets a user by their username and password. Returns `nil` if either
+  the user is not found or the password does not match.
   """
   def get_user_by_username_and_password(username, password)
       when is_binary(username) and is_binary(password) do
     user = Repo.get_by(User, username: username)
-    if User.valid_password?(user, password), do: user
+    if user && User.valid_password?(user, password), do: user
   end
 
   @doc """
-  Gets a single user.
-
-  Returns `nil` if the User does not exist.
-
-   ## Examples
-
-      iex> get_user(123)
-      %User{}
-
-      iex> get_user(456)
-      nil
+  Gets a single user by their ID. Returns `nil` if the user does not exist.
   """
   def get_user(id), do: Repo.get(User, id)
 
   ## User registration
 
   @doc """
-  Registers a user.
-
-  ## Examples
-
-      iex> register_user(%{field: value})
-      {:ok, %User{}}
-
-      iex> register_user(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
+  Registers a new user with the provided attributes. Returns the user struct
+  on successful registration or an Ecto.Changeset struct in case of an error.
   """
   def register_user(attrs) do
     %User{}
@@ -81,12 +46,6 @@ defmodule MvpMatchCodeChallenge.Accounts do
 
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking user changes.
-
-  ## Examples
-
-      iex> change_user_registration(user)
-      %Ecto.Changeset{data: %User{}}
-
   """
   def change_user_registration(%User{} = user, attrs \\ %{}) do
     User.registration_changeset(user, attrs, hash_password: false, validate_username: false)
@@ -98,32 +57,18 @@ defmodule MvpMatchCodeChallenge.Accounts do
     |> Repo.update()
   end
 
-  ## Settings
+  ## User settings
 
   @doc """
-  Returns an `%Ecto.Changeset{}` for changing the user password.
-
-  ## Examples
-
-      iex> change_user_password(user)
-      %Ecto.Changeset{data: %User{}}
-
+  Prepares a changeset for changing the user's password.
+  By default, does not hash the new password.
   """
-  def change_user_password(user, attrs \\ %{}) do
+  def change_user_password(%User{} = user, attrs \\ %{}) do
     User.password_changeset(user, attrs, hash_password: false)
   end
 
   @doc """
-  Updates the user password.
-
-  ## Examples
-
-      iex> update_user_password(user, "valid password", %{password: ...})
-      {:ok, %User{}}
-
-      iex> update_user_password(user, "invalid password", %{password: ...})
-      {:error, %Ecto.Changeset{}}
-
+  Updates the user's password after verifying the current password.
   """
   def update_user_password(user, password, attrs) do
     changeset =
@@ -142,7 +87,7 @@ defmodule MvpMatchCodeChallenge.Accounts do
   end
 
   @doc """
-  Deletes the given user and all its associated tokens.
+  Deletes the specified user and all their associated tokens.
   """
   def delete_user(user) do
     Ecto.Multi.new()
@@ -155,10 +100,10 @@ defmodule MvpMatchCodeChallenge.Accounts do
     end
   end
 
-  ## Session
+  ## Session management
 
   @doc """
-  Generates a session token.
+  Generates a session token for the given user.
   """
   def generate_user_session_token(user) do
     {encoded_token, user_token} = UserToken.build_session_token(user)
@@ -167,7 +112,7 @@ defmodule MvpMatchCodeChallenge.Accounts do
   end
 
   @doc """
-  Gets the user with the given signed token.
+  Gets the user associated with a given session token.
   """
   def get_user_by_session_token(token) do
     {:ok, query} = UserToken.verify_session_token_query(token)
@@ -175,12 +120,12 @@ defmodule MvpMatchCodeChallenge.Accounts do
   end
 
   @doc """
-  Deletes the signed token with the given context.
+  Deletes a user's session token based on the given token value.
   """
   def delete_user_session_token(token) do
-    Repo.delete_all(
-      UserToken.by_token_and_context_query(token, UserToken.get_session_token_context())
-    )
+    token
+    |> UserToken.by_token_and_context_query(UserToken.get_session_token_context())
+    |> Repo.delete_all()
 
     :ok
   end
