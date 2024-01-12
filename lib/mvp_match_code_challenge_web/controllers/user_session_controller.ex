@@ -1,8 +1,11 @@
 defmodule MvpMatchCodeChallengeWeb.UserSessionController do
+  @moduledoc false
   use MvpMatchCodeChallengeWeb, :controller
 
   alias MvpMatchCodeChallenge.Accounts
   alias MvpMatchCodeChallengeWeb.UserAuth
+
+  action_fallback MvpMatchCodeChallengeWeb.FallbackController
 
   def create(conn, %{"_action" => "registered"} = params) do
     create(conn, params, "Account created successfully!")
@@ -58,5 +61,21 @@ defmodule MvpMatchCodeChallengeWeb.UserSessionController do
     conn
     |> put_flash(:info, "Logged out successfully.")
     |> UserAuth.log_out_user()
+  end
+
+  def delete_all_tokens(
+        %{
+          assigns: %{
+            current_user: current_user
+          }
+        } = conn,
+        _params
+      ) do
+    if :ok == Accounts.delete_all_user_tokens(current_user) do
+      conn
+      |> send_resp(204, "")
+    else
+      {:error, :internal_server_error}
+    end
   end
 end

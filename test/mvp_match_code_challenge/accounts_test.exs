@@ -336,6 +336,24 @@ defmodule MvpMatchCodeChallenge.AccountsTest do
     end
   end
 
+  describe "delete_all_user_tokens/1" do
+    setup do
+      user = user_fixture()
+      Accounts.generate_user_session_token(user)
+      Accounts.create_user_api_token(user)
+      %{user: user}
+    end
+
+    test "deletes all tokens for the given user", %{user: user} do
+      assert UserToken
+             |> Repo.all(user_id: user.id)
+             |> Enum.count() == 2
+
+      assert Accounts.delete_all_user_tokens(user) == :ok
+      refute Repo.get_by(UserToken, user_id: user.id)
+    end
+  end
+
   describe "create_user_api_token/1" do
     test "creates a token" do
       user = user_fixture()

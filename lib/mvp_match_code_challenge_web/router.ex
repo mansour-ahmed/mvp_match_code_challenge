@@ -39,6 +39,12 @@ defmodule MvpMatchCodeChallengeWeb.Router do
         post "/:id/deposit/:coin", UserController, :deposit
       end
 
+      scope "/" do
+        pipe_through [:api_require_authenticated_user]
+
+        delete "/log_out/all", UserSessionController, :delete_all_tokens
+      end
+
       post "/", UserController, :create
       post "/token", UserSessionController, :create_api_token
     end

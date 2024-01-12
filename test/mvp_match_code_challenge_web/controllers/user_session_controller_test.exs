@@ -1,4 +1,5 @@
 defmodule MvpMatchCodeChallengeWeb.UserSessionControllerTest do
+  alias MvpMatchCodeChallenge.Accounts
   use MvpMatchCodeChallengeWeb.ConnCase, async: true
 
   import MvpMatchCodeChallenge.AccountsFixtures
@@ -137,6 +138,28 @@ defmodule MvpMatchCodeChallengeWeb.UserSessionControllerTest do
       assert redirected_to(conn) == ~p"/"
       refute get_session(conn, :user_token)
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Logged out successfully"
+    end
+  end
+
+  describe "DELETE api/users/log_out/all" do
+    setup %{
+      conn: conn
+    } do
+      user = user_fixture(%{role: :buyer, deposit: 100})
+      user_token = Accounts.create_user_api_token(user)
+
+      conn_with_token = put_req_header(conn, "authorization", "Bearer #{user_token}")
+
+      %{
+        conn: conn,
+        conn_with_token: conn_with_token
+      }
+    end
+
+    test "returns 401 when user is not logged in", %{conn: conn} do
+      conn = delete(conn, "/api/users/log_out/all")
+
+      assert response(conn, 401) == "You must use a valid token to access this resource."
     end
   end
 end
