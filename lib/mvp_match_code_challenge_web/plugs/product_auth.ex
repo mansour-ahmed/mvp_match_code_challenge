@@ -3,105 +3,69 @@ defmodule MvpMatchCodeChallengeWeb.ProductAuth do
 
   import Plug.Conn
   import Phoenix.Controller
-
   alias MvpMatchCodeChallenge.Products
 
-  def on_mount(
-        :ensure_product_seller,
-        %{"id" => product_id} = _params,
-        _session,
-        %{assigns: %{current_user: current_user}} = socket
-      ) do
-    product = Products.get_product_by_seller_id(product_id, current_user.id)
+  @not_authored_message "You must be the seller of the product to access this"
 
-    if product do
-      socket = Phoenix.Component.assign(socket, :product, product)
-      {:cont, socket}
+  def on_mount(:ensure_product_seller, params, _session, socket) do
+    user = Map.get(socket.assigns, :current_user)
+    product_id = params["id"]
+
+    authorize_action(product_id, user, socket, method: :socket)
+  end
+
+  def require_product_seller(conn, _opts) do
+    user = Map.get(conn.assigns, :current_user)
+    product_id = conn.params["id"]
+
+    authorize_action(product_id, user, conn, method: :conn)
+  end
+
+  def api_require_product_seller(conn, _opts) do
+    user = Map.get(conn.assigns, :current_user)
+    product_id = conn.params["id"]
+
+    authorize_action(product_id, user, conn, method: :api_conn)
+  end
+
+  defp authorize_action(_, nil, context, opts), do: halt_context(context, opts[:method])
+
+  defp authorize_action(product_id, user, context, opts) do
+    if user_is_product_seller?(product_id, user.id) do
+      continue_context(context, opts[:method])
     else
-      socket =
-        socket
-        |> Phoenix.LiveView.put_flash(
-          :error,
-          "You must be the seller of the product to access this page."
-        )
-        |> Phoenix.Component.assign(:product, nil)
-        |> Phoenix.LiveView.redirect(to: ~p"/products")
-
-      {:halt, socket}
+      halt_context(context, opts[:method])
     end
   end
 
-  def on_mount(
-        :ensure_product_seller,
-        _params,
-        _session,
-        socket
-      ) do
-    socket =
-      socket
-      |> Phoenix.LiveView.put_flash(
-        :error,
-        "You must be the seller of the product to access this page."
-      )
-      |> Phoenix.Component.assign(:product, nil)
-      |> Phoenix.LiveView.redirect(to: ~p"/products")
+  defp user_is_product_seller?(product_id, user_id) do
+    Products.get_product_by_seller_id(product_id, user_id) != nil
+  end
+
+  defp continue_context(context, :socket), do: {:cont, context}
+  defp continue_context(context, _), do: context
+
+  defp halt_context(socket, :socket) do
+    socket
+    |> Phoenix.LiveView.put_flash(:error, error_message())
+    |> Phoenix.Component.assign(:product, nil)
+    |> Phoenix.LiveView.redirect(to: ~p"/products")
 
     {:halt, socket}
   end
 
-  def require_product_seller(
-        %{assigns: %{current_user: %{id: user_id}}, params: %{"id" => product_id}} = conn,
-        _opts
-      ) do
-    product = Products.get_product_by_seller_id(product_id, user_id)
-
-    if product do
-      conn
-    else
-      conn
-      |> put_flash(:error, "You must be the seller of the product to access this page.")
-      |> redirect(to: ~p"/products")
-      |> halt()
-    end
-  end
-
-  def require_product_seller(
-        conn,
-        _opts
-      ) do
+  defp halt_context(conn, :conn) do
     conn
-    |> put_flash(:error, "You must be the seller of the product to access this page.")
+    |> put_flash(:error, error_message())
     |> redirect(to: ~p"/products")
     |> halt()
   end
 
-  def api_require_product_seller(
-        %{assigns: %{current_user: %{id: user_id}}, params: %{"id" => product_id}} = conn,
-        _opts
-      ) do
-    product = Products.get_product_by_seller_id(product_id, user_id)
-
-    if product do
-      conn
-    else
-      conn
-      |> send_resp(
-        :unauthorized,
-        "Not authorized"
-      )
-      |> halt()
-    end
-  end
-
-  def api_require_product_seller(
-        conn,
-        _opts
-      ) do
+  defp halt_context(conn, :api_conn) do
     conn
-    |> send_resp(
-      :unauthorized,
-      "You must be the seller of the product to access this resource."
-    )
+    |> send_resp(:unauthorized, "#{@not_authored_message} resource.")
     |> halt()
   end
+
+  defp error_message, do: "#{@not_authored_message} page."
 end

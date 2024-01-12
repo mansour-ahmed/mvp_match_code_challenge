@@ -122,7 +122,8 @@ defmodule MvpMatchCodeChallengeWeb.ProductControllerTest do
       conn =
         put(conn, ~p"/api/products/#{product}", product: valid_product_attributes())
 
-      assert response(conn, 401) == "Not authorized"
+      assert response(conn, 401) ==
+               "You must be the seller of the product to access this resource."
     end
 
     test "renders errors when data is invalid", %{conn_with_token: conn, product: product} do
@@ -171,7 +172,8 @@ defmodule MvpMatchCodeChallengeWeb.ProductControllerTest do
     } do
       conn = delete(conn, ~p"/api/products/#{product}")
 
-      assert response(conn, 401) == "Not authorized"
+      assert response(conn, 401) ==
+               "You must be the seller of the product to access this resource."
     end
 
     test "renders product when data is valid", %{conn_with_token: conn, product: product} do

@@ -3,8 +3,9 @@ defmodule MvpMatchCodeChallengeWeb.UserAuth do
 
   import Plug.Conn
   import Phoenix.Controller
-
   alias MvpMatchCodeChallenge.Accounts
+
+  @login_required_message "You must log in to access this page."
 
   @doc """
   Handles mounting and authenticating the current_user in LiveViews.
@@ -53,8 +54,8 @@ defmodule MvpMatchCodeChallengeWeb.UserAuth do
     else
       socket =
         socket
-        |> Phoenix.LiveView.put_flash(:error, "You must log in to access this page.")
-        |> Phoenix.LiveView.redirect(to: ~p"/users/log_in")
+        |> Phoenix.LiveView.put_flash(:error, @login_required_message)
+        |> Phoenix.LiveView.redirect(to: log_in_path())
 
       {:halt, socket}
     end
@@ -99,14 +100,16 @@ defmodule MvpMatchCodeChallengeWeb.UserAuth do
       conn
     else
       conn
-      |> put_flash(:error, "You must log in to access this page.")
+      |> put_flash(:error, @login_required_message)
       |> maybe_store_return_to()
-      |> redirect(to: ~p"/users/log_in")
+      |> redirect(to: log_in_path())
       |> halt()
     end
   end
 
   defp signed_in_path(_conn), do: ~p"/"
+
+  defp log_in_path(), do: ~p"/users/log_in"
 
   defp maybe_store_return_to(%{method: "GET"} = conn) do
     put_session(conn, :user_return_to, current_path(conn))

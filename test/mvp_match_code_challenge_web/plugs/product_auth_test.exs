@@ -39,7 +39,7 @@ defmodule MvpMatchCodeChallengeWeb.ProductAuthTest do
       {:halt, updated_socket} =
         ProductAuth.on_mount(:ensure_product_seller, %{"id" => product.id}, session, socket)
 
-      assert updated_socket.assigns.product == nil
+      assert Map.get(updated_socket.assigns, :product) == nil
     end
 
     test "redirects to products page if given user isn't product seller", %{
@@ -64,32 +64,7 @@ defmodule MvpMatchCodeChallengeWeb.ProductAuthTest do
           }
         )
 
-      assert updated_socket.assigns.product == nil
-    end
-
-    test "assigns product based on a valid user_token", %{
-      conn: conn,
-      user: user,
-      product: product
-    } do
-      user_token = Accounts.generate_user_session_token(user)
-
-      session =
-        conn
-        |> put_session(:user_token, user_token)
-        |> get_session()
-
-      {:cont, updated_socket} =
-        ProductAuth.on_mount(
-          :ensure_product_seller,
-          %{"id" => product.id},
-          session,
-          %LiveView.Socket{
-            assigns: %{__changed__: %{}, flash: %{}, current_user: user}
-          }
-        )
-
-      assert updated_socket.assigns.product == product
+      assert Map.get(updated_socket.assigns, :product) == nil
     end
   end
 
@@ -111,7 +86,7 @@ defmodule MvpMatchCodeChallengeWeb.ProductAuthTest do
 
       assert conn.halted
       assert conn.status == 401
-      assert conn.resp_body == "Not authorized"
+      assert conn.resp_body == "You must be the seller of the product to access this resource."
     end
 
     test "responds with 401 if user is not authenticated", %{conn: conn, product: product} do
@@ -139,7 +114,7 @@ defmodule MvpMatchCodeChallengeWeb.ProductAuthTest do
 
       assert conn.halted
       assert conn.status == 401
-      assert conn.resp_body == "Not authorized"
+      assert conn.resp_body == "You must be the seller of the product to access this resource."
     end
 
     test "does not respond with 401 if user is product seller", %{

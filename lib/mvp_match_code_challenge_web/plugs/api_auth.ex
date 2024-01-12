@@ -4,6 +4,8 @@ defmodule MvpMatchCodeChallengeWeb.ApiAuth do
   alias MvpMatchCodeChallenge.{Accounts, ApiTokens}
   import Plug.Conn
 
+  @unauthorized_message "Not authorized"
+
   def fetch_api_user(conn, _opts) do
     with ["Bearer " <> token] <- get_req_header(conn, "authorization"),
          {:ok, user} <- ApiTokens.fetch_user_by_api_token(token) do
@@ -15,46 +17,44 @@ defmodule MvpMatchCodeChallengeWeb.ApiAuth do
   end
 
   @doc """
-  Used for routes that require the user to be authenticated.
+  Requires the user to be authenticated to access the route.
   """
   def api_require_authenticated_user(conn, _opts) do
     if conn.assigns[:current_user] do
       conn
     else
-      conn
-      |> send_resp(:unauthorized, "You must use a valid token to access this resource.")
-      |> halt()
+      unauthorized_response(conn, "You must use a valid token to access this resource.")
     end
   end
 
-  def api_require_user_admin(
-        %{assigns: %{current_user: %{id: current_user_id}}, params: %{"id" => user_id}} = conn,
-        _opts
-      ) do
+  @doc """
+  Requires the current user to be an admin of the specified user.
+  """
+  def api_require_user_admin(conn, opts) do
+    case conn.assigns[:current_user] do
+      %{id: current_user_id} ->
+        check_user_admin(conn, current_user_id, opts)
+
+      _ ->
+        unauthorized_response(conn, @unauthorized_message)
+    end
+  end
+
+  defp check_user_admin(%{params: %{"id" => user_id}} = conn, current_user_id, _) do
     user = Accounts.get_user(user_id)
 
-    # return 'not authorized' even if user is not found to avoid user enumeration attacks
     if user && user.id === current_user_id do
       conn
     else
-      conn
-      |> send_resp(
-        :unauthorized,
-        "Not authorized"
-      )
-      |> halt()
+      unauthorized_response(conn, @unauthorized_message)
     end
   end
 
-  def api_require_user_admin(
-        conn,
-        _opts
-      ) do
+  defp check_user_admin(conn, _, _), do: unauthorized_response(conn, @unauthorized_message)
+
+  defp unauthorized_response(conn, message) do
     conn
-    |> send_resp(
-      :unauthorized,
-      "Not authorized"
-    )
+    |> send_resp(:unauthorized, message)
     |> halt()
   end
 end
