@@ -1,7 +1,7 @@
 defmodule MvpMatchCodeChallengeWeb.Router do
   use MvpMatchCodeChallengeWeb, :router
 
-  import MvpMatchCodeChallengeWeb.UserAuth
+  import MvpMatchCodeChallengeWeb.{UserAuth, UserSessionAuth, ApiAuth, ProductAuth}
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -123,7 +123,7 @@ defmodule MvpMatchCodeChallengeWeb.Router do
       on_mount: [
         {MvpMatchCodeChallengeWeb.UserAuth, :ensure_authenticated},
         {
-          MvpMatchCodeChallengeWeb.UserAuth,
+          MvpMatchCodeChallengeWeb.ProductAuth,
           :ensure_product_seller
         }
       ] do

@@ -2,7 +2,7 @@ defmodule MvpMatchCodeChallengeWeb.UserSessionController do
   use MvpMatchCodeChallengeWeb, :controller
 
   alias MvpMatchCodeChallenge.{ApiTokens, Accounts}
-  alias MvpMatchCodeChallengeWeb.UserAuth
+  alias MvpMatchCodeChallengeWeb.UserSessionAuth
 
   action_fallback MvpMatchCodeChallengeWeb.FallbackController
 
@@ -26,7 +26,7 @@ defmodule MvpMatchCodeChallengeWeb.UserSessionController do
     if user = Accounts.get_user_by_username_and_password(username, password) do
       conn
       |> put_flash(:info, info)
-      |> UserAuth.log_in_user(user, user_params)
+      |> UserSessionAuth.log_in_user(user, user_params)
     else
       # In order to prevent user enumeration attacks, don't disclose whether the username is registered.
       conn
@@ -39,7 +39,7 @@ defmodule MvpMatchCodeChallengeWeb.UserSessionController do
   def delete(conn, _params) do
     conn
     |> put_flash(:info, "Logged out successfully.")
-    |> UserAuth.log_out_user()
+    |> UserSessionAuth.log_out_user()
   end
 
   def create_api_token(conn, %{"user" => user_params}) do
