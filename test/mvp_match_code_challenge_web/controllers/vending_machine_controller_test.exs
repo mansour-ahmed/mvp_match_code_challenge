@@ -1,5 +1,4 @@
 defmodule MvpMatchCodeChallengeWeb.VendingMachineControllerTest do
-  @moduledoc false
   use MvpMatchCodeChallengeWeb.ConnCase, async: true
 
   import MvpMatchCodeChallenge.ProductsFixtures

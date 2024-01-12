@@ -1,7 +1,6 @@
 defmodule MvpMatchCodeChallenge.Application do
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
-  @moduledoc false
 
   use Application
 
@@ -10,7 +9,8 @@ defmodule MvpMatchCodeChallenge.Application do
     children = [
       MvpMatchCodeChallengeWeb.Telemetry,
       MvpMatchCodeChallenge.Repo,
-      {DNSCluster, query: Application.get_env(:mvp_match_code_challenge, :dns_cluster_query) || :ignore},
+      {DNSCluster,
+       query: Application.get_env(:mvp_match_code_challenge, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: MvpMatchCodeChallenge.PubSub},
       # Start the Finch HTTP client for sending emails
       {Finch, name: MvpMatchCodeChallenge.Finch},

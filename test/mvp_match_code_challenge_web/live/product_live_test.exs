@@ -1,6 +1,4 @@
 defmodule MvpMatchCodeChallengeWeb.ProductLiveTest do
-  @moduledoc false
-
   use MvpMatchCodeChallengeWeb.ConnCase, async: true
 
   alias MvpMatchCodeChallenge.AccountsFixtures

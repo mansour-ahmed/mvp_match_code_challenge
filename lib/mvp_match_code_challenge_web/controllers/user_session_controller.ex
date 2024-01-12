@@ -1,5 +1,4 @@
 defmodule MvpMatchCodeChallengeWeb.UserSessionController do
-  @moduledoc false
   use MvpMatchCodeChallengeWeb, :controller
 
   alias MvpMatchCodeChallenge.Accounts

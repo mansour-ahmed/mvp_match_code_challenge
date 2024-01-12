@@ -1,5 +1,4 @@
 defmodule MvpMatchCodeChallenge.Products.Product do
-  @moduledoc false
   use Ecto.Schema
   alias MvpMatchCodeChallenge.Accounts
   import Ecto.Changeset

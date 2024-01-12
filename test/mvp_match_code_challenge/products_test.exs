@@ -1,5 +1,4 @@
 defmodule MvpMatchCodeChallenge.ProductsTest do
-  @moduledoc false
   use MvpMatchCodeChallenge.DataCase, async: true
 
   alias MvpMatchCodeChallenge.Products

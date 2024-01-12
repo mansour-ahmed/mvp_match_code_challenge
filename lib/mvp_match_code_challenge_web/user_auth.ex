@@ -1,5 +1,4 @@
 defmodule MvpMatchCodeChallengeWeb.UserAuth do
-  @moduledoc false
   use MvpMatchCodeChallengeWeb, :verified_routes
 
   import Plug.Conn

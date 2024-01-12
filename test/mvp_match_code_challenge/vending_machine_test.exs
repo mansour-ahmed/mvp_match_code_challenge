@@ -1,5 +1,4 @@
 defmodule MvpMatchCodeChallenge.VendingMachineTest do
-  @moduledoc false
   alias MvpMatchCodeChallenge.Products.Product
   alias MvpMatchCodeChallenge.Accounts.User
   alias MvpMatchCodeChallenge.AccountsFixtures

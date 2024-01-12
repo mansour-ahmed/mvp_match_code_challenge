@@ -1,5 +1,4 @@
 defmodule MvpMatchCodeChallengeWeb.UserJSON do
-  @moduledoc false
   alias MvpMatchCodeChallenge.Accounts.User
 
   @doc """

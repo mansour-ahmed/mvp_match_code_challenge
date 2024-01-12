@@ -1,5 +1,4 @@
 defmodule MvpMatchCodeChallengeWeb.UserControllerTest do
-  @moduledoc false
   use MvpMatchCodeChallengeWeb.ConnCase, async: true
 
   import MvpMatchCodeChallenge.AccountsFixtures

@@ -1,5 +1,4 @@
 defmodule MvpMatchCodeChallengeWeb.ProductJSON do
-  @moduledoc false
   alias MvpMatchCodeChallenge.Products.Product
 
   @doc """

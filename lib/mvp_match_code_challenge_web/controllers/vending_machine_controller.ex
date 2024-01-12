@@ -1,5 +1,4 @@
 defmodule MvpMatchCodeChallengeWeb.VendingMachineController do
-  @moduledoc false
   use MvpMatchCodeChallengeWeb, :controller
 
   alias MvpMatchCodeChallenge.VendingMachine
