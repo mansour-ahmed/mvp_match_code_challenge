@@ -73,7 +73,7 @@ defmodule MvpMatchCodeChallengeWeb.ProductControllerTest do
           }
         )
 
-      assert json_response(conn, 400)["errors"] == %{"detail" => "Bad Request"}
+      assert response(conn, 401) == "You must be a seller to access this resource."
     end
 
     test "renders product when data is valid", %{conn_with_token: conn, user: user} do

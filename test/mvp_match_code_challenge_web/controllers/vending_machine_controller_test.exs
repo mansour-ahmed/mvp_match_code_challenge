@@ -54,7 +54,7 @@ defmodule MvpMatchCodeChallengeWeb.VendingMachineControllerTest do
           amount: 1
         })
 
-      assert json_response(conn, 400)["errors"] == %{"detail" => "Bad Request"}
+      assert response(conn, 401) == "You must be a buyer to access this resource."
     end
 
     test "renders transaction when product is found", %{conn_with_token: conn, product: product} do

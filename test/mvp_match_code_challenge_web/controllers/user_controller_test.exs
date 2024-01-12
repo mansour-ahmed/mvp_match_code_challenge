@@ -115,6 +115,18 @@ defmodule MvpMatchCodeChallengeWeb.UserControllerTest do
       assert response(conn, 401) == "Not authorized"
     end
 
+    test "returns 401 when user does not have buyer role", %{
+      conn: conn
+    } do
+      seller_user = user_fixture(%{role: :seller})
+      user_token = ApiTokens.create_user_api_token(seller_user)
+      conn_with_token = put_req_header(conn, "authorization", "Bearer #{user_token}")
+
+      conn = post(conn_with_token, "/api/users/#{seller_user.id}/deposit/reset")
+
+      assert response(conn, 401) == "You must be a buyer to access this resource."
+    end
+
     test "returns 401 when user is not found", %{conn_with_token: conn} do
       conn = post(conn, "/api/users/223232/deposit/reset")
 
@@ -142,6 +154,18 @@ defmodule MvpMatchCodeChallengeWeb.UserControllerTest do
       conn = post(conn, "/api/users/#{random_user.id}/deposit/5")
 
       assert response(conn, 401) == "Not authorized"
+    end
+
+    test "returns 401 when user does not have buyer role", %{
+      conn: conn
+    } do
+      seller_user = user_fixture(%{role: :seller})
+      user_token = ApiTokens.create_user_api_token(seller_user)
+      conn_with_token = put_req_header(conn, "authorization", "Bearer #{user_token}")
+
+      conn = post(conn_with_token, "/api/users/#{seller_user.id}/deposit/5")
+
+      assert response(conn, 401) == "You must be a buyer to access this resource."
     end
 
     test "returns 401 when user is not found", %{conn_with_token: conn} do

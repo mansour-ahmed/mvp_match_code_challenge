@@ -10,7 +10,7 @@ defmodule MvpMatchCodeChallenge.VendingMachine do
   Adds a specified coin value to given user's deposit.
   Valid only for users with the `:buyer` role and when using valid coin denominations.
   """
-  def add_coin_to_user_deposit(%User{role: :buyer} = user, coin) when is_integer(coin) do
+  def add_coin_to_user_deposit(user, coin) when is_integer(coin) do
     if Enum.member?(@valid_coins, coin) do
       user |> Accounts.update_user_deposit(%{deposit: coin + user.deposit})
     else
@@ -18,15 +18,11 @@ defmodule MvpMatchCodeChallenge.VendingMachine do
     end
   end
 
-  def add_coin_to_user_deposit(_, _), do: {:error, :not_a_buyer}
-
   @doc """
   Resets the user's deposit to zero. Permitted only for users with the `:buyer` role.
   """
-  def reset_user_deposit(%User{role: :buyer} = user),
+  def reset_user_deposit(user),
     do: user |> Accounts.update_user_deposit(%{deposit: 0})
-
-  def reset_user_deposit(_), do: {:error, :not_a_buyer}
 
   @doc """
   Handles the purchase of products by given user.

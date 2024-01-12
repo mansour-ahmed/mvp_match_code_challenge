@@ -28,6 +28,32 @@ defmodule MvpMatchCodeChallengeWeb.ApiAuth do
   end
 
   @doc """
+  Requires the user to have the buyer role to access the route.
+  """
+  def api_require_buyer_user(conn, _opts) do
+    current_user_role = Map.get(conn.assigns.current_user, :role)
+
+    if current_user_role === :buyer do
+      conn
+    else
+      unauthorized_response(conn, "You must be a buyer to access this resource.")
+    end
+  end
+
+  @doc """
+  Requires the user to have the seller role to access the route.
+  """
+  def api_require_seller_user(conn, _opts) do
+    current_user_role = Map.get(conn.assigns.current_user, :role)
+
+    if current_user_role === :seller do
+      conn
+    else
+      unauthorized_response(conn, "You must be a seller to access this resource.")
+    end
+  end
+
+  @doc """
   Requires the current user to be an admin of the specified user.
   """
   def api_require_user_admin(conn, opts) do

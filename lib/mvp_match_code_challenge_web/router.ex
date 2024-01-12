@@ -26,7 +26,7 @@ defmodule MvpMatchCodeChallengeWeb.Router do
     pipe_through :api
 
     scope "/" do
-      pipe_through :api_require_authenticated_user
+      pipe_through [:api_require_authenticated_user, :api_require_buyer_user]
       post "/buy", VendingMachineController, :buy
     end
 
@@ -35,6 +35,15 @@ defmodule MvpMatchCodeChallengeWeb.Router do
         pipe_through [:api_require_authenticated_user, :api_require_user_admin]
         get "/:id", UserController, :show
         delete "/:id", UserController, :delete
+      end
+
+      scope "/" do
+        pipe_through [
+          :api_require_authenticated_user,
+          :api_require_user_admin,
+          :api_require_buyer_user
+        ]
+
         post "/:id/deposit/reset", UserController, :reset_deposit
         post "/:id/deposit/:coin", UserController, :deposit
       end
@@ -54,7 +63,7 @@ defmodule MvpMatchCodeChallengeWeb.Router do
       get "/:id", ProductController, :show
 
       scope "/" do
-        pipe_through [:api_require_authenticated_user]
+        pipe_through [:api_require_authenticated_user, :api_require_seller_user]
         post "/", ProductController, :create
       end
 
