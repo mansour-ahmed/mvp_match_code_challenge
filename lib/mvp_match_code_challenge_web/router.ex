@@ -25,12 +25,10 @@ defmodule MvpMatchCodeChallengeWeb.Router do
   scope "/api", MvpMatchCodeChallengeWeb do
     pipe_through :api
 
-    scope "/users" do
-      post "/", UserController, :create
+    scope "/" do
+      pipe_through [:api_require_authenticated_user]
 
-      scope "/" do
-        pipe_through [:api_require_authenticated_user]
-
+      scope "/users" do
         scope "/:id" do
           pipe_through [:api_require_user_admin]
           get "/", UserController, :show
@@ -47,25 +45,12 @@ defmodule MvpMatchCodeChallengeWeb.Router do
           post "/deposit/:coin", UserController, :deposit
         end
       end
-    end
 
-    scope "/session" do
-      post "/token", UserSessionController, :create_api_token
-
-      scope "/" do
-        pipe_through [:api_require_authenticated_user]
-
+      scope "/session" do
         delete "/log_out/all", UserSessionController, :delete_all_tokens
       end
-    end
 
-    scope "/products" do
-      get "/", ProductController, :index
-      get "/:id", ProductController, :show
-
-      scope "/" do
-        pipe_through [:api_require_authenticated_user]
-
+      scope "/products" do
         scope "/" do
           pipe_through [:api_require_seller_user]
           post "/", ProductController, :create
@@ -83,71 +68,87 @@ defmodule MvpMatchCodeChallengeWeb.Router do
         end
       end
     end
-  end
 
-  # Enable LiveDashboard and Swoosh mailbox preview in development
-  if Application.compile_env(:mvp_match_code_challenge, :dev_routes) do
-    # If you want to use the LiveDashboard in production, you should put
-    # it behind authentication and allow only admins to access it.
-    # If your application does not have an admins-only section yet,
-    # you can use Plug.BasicAuth to set up some basic authentication
-    # as long as you are also using SSL (which you should anyway).
-    import Phoenix.LiveDashboard.Router
-
-    scope "/dev" do
-      pipe_through :browser
-
-      live_dashboard "/dashboard", metrics: MvpMatchCodeChallengeWeb.Telemetry
-      forward "/mailbox", Plug.Swoosh.MailboxPreview
-    end
-  end
-
-  ## Authentication routes
-
-  scope "/", MvpMatchCodeChallengeWeb do
-    pipe_through [:browser, :redirect_if_user_is_authenticated]
-
-    live_session :redirect_if_user_is_authenticated,
-      on_mount: [{MvpMatchCodeChallengeWeb.UserAuth, :redirect_if_user_is_authenticated}] do
-      live "/users/register", UserRegistrationLive, :new
-      live "/users/log_in", UserLoginLive, :new
-    end
-
-    post "/users/log_in", UserSessionController, :create
-  end
-
-  scope "/", MvpMatchCodeChallengeWeb do
-    pipe_through [:browser, :require_authenticated_user]
-
-    live_session :require_authenticated_user,
-      on_mount: [{MvpMatchCodeChallengeWeb.UserAuth, :ensure_authenticated}] do
-      live "/users/settings", UserSettingsLive, :edit
-
-      live "/products", ProductLive.Index, :index
-      live "/products/new", ProductLive.Index, :new
-      live "/products/:id", ProductLive.Show, :show
-    end
-  end
-
-  scope "/", MvpMatchCodeChallengeWeb do
-    pipe_through [:browser, :require_authenticated_user, :require_product_seller]
-
-    live_session :product_seller_required,
-      on_mount: [
-        {MvpMatchCodeChallengeWeb.UserAuth, :ensure_authenticated},
-        {
-          MvpMatchCodeChallengeWeb.ProductAuth,
-          :ensure_product_seller
-        }
-      ] do
-      live "/products/:id/edit", ProductLive.Index, :edit
-      live "/products/:id/show/edit", ProductLive.Show, :edit
-    end
+    # Public routes
+    post "/users", UserController, :create
+    post "/session/token", UserSessionController, :create_api_token
+    get "/products/", ProductController, :index
+    get "/products/:id", ProductController, :show
   end
 
   scope "/", MvpMatchCodeChallengeWeb do
     pipe_through [:browser]
 
+    scope "/users" do
+      pipe_through [:redirect_if_user_is_authenticated]
+
+      live_session :redirect_if_user_is_authenticated,
+        on_mount: [{MvpMatchCodeChallengeWeb.UserAuth, :redirect_if_user_is_authenticated}] do
+        live "/register", UserRegistrationLive, :new
+        live "/log_in", UserLoginLive, :new
+      end
+
+      post "/log_in", UserSessionController, :create
+    end
+
+    # Authenticated routes
+    scope "/" do
+      pipe_through [:require_authenticated_user]
+
+      delete "/users/log_out/all", UserSessionController, :delete_all
+
+      scope "/" do
+        pipe_through [:require_seller_user]
+
+        live_session :authenticated_seller_user_required,
+          on_mount: [
+            {MvpMatchCodeChallengeWeb.UserAuth, :ensure_authenticated},
+            {MvpMatchCodeChallengeWeb.UserAuth, :ensure_seller_user}
+          ] do
+          live "/products/new", ProductLive.Index, :new
+        end
+      end
+
+      live_session :authenticated_user_required,
+        on_mount: [{MvpMatchCodeChallengeWeb.UserAuth, :ensure_authenticated}] do
+        live "/users/settings", UserSettingsLive, :edit
+      end
+
+      scope "/" do
+        pipe_through [:require_product_seller]
+
+        live_session :product_seller_required,
+          on_mount: [
+            {MvpMatchCodeChallengeWeb.UserAuth, :ensure_authenticated},
+            {
+              MvpMatchCodeChallengeWeb.ProductAuth,
+              :ensure_product_seller
+            }
+          ] do
+          live "/products/:id/edit", ProductLive.Index, :edit
+          live "/products/:id/show/edit", ProductLive.Show, :edit
+        end
+      end
+    end
+
+    # Public routes
     delete "/users/log_out", UserSessionController, :delete
+
+    live_session :public_session,
+      on_mount: [{MvpMatchCodeChallengeWeb.UserAuth, :mount_current_user}] do
+      live "/", ProductLive.Index, :index
+      live "/products", ProductLive.Index, :index
+      live "/products/:id", ProductLive.Show, :show
+    end
+
+    # Enable LiveDashboard and Swoosh mailbox preview in development
+    if Application.compile_env(:mvp_match_code_challenge, :dev_routes) do
+      import Phoenix.LiveDashboard.Router
+
+      scope "/dev" do
+        live_dashboard "/dashboard", metrics: MvpMatchCodeChallengeWeb.Telemetry
+        forward "/mailbox", Plug.Swoosh.MailboxPreview
+      end
+    end
   end
 end

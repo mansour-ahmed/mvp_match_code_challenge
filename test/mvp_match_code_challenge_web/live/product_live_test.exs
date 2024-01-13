@@ -27,14 +27,6 @@ defmodule MvpMatchCodeChallengeWeb.ProductLiveTest do
       }
     end
 
-    test "redirects if user is not logged in", %{unauthenticated_conn: conn} do
-      assert {:error, redirect} = live(conn, ~p"/products")
-
-      assert {:redirect, %{to: path, flash: flash}} = redirect
-      assert path == ~p"/users/log_in"
-      assert %{"error" => "You must log in to access this page."} = flash
-    end
-
     test "lists all products", %{
       conn: conn,
       product_sold_by_current_user: product_sold_by_current_user,

@@ -1,18 +1,46 @@
 # MvpMatchCodeChallenge
 
-To start your Phoenix server:
+## API Endpoints
 
-  * Run `mix setup` to install and setup dependencies
-  * Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
+### Users
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+- **POST `/api/users/`**: Create a new user.
+- **GET `/api/users/:id`**: Get user details.
+- **DELETE `/api/users/:id`**: Delete a user.
 
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
+### Deposits
 
-## Learn more
+- **PUT `/api/users/:id/deposit/reset`**: Reset user's deposit (Buyers only).
+- **POST `/api/users/:id/deposit/:coin`**: Add coin to deposit (Buyers only).
 
-  * Official website: https://www.phoenixframework.org/
-  * Guides: https://hexdocs.pm/phoenix/overview.html
-  * Docs: https://hexdocs.pm/phoenix
-  * Forum: https://elixirforum.com/c/phoenix-forum
-  * Source: https://github.com/phoenixframework/phoenix
+### Session
+
+- **POST `/api/session/token`**: Generate API token.
+- **DELETE `/api/session/log_out/all`**: Logout all sessions.
+
+### Products
+
+- **GET `/api/products/`**: List all products.
+- **GET `/api/products/:id`**: Get product details.
+- **POST `/api/products/`**: Create a product (Sellers only).
+- **PUT `/api/products/:id`**: Update a product (Product's seller only).
+- **DELETE `/api/products/:id`**: Delete a product (Product's seller only).
+- **POST `/api/products/:id/buy`**: Buy a product (Buyers only).
+
+## Test User Credentials
+
+For testing purposes, the following user accounts have been created in the development environment:
+
+1. **Buyer User**
+
+   - Username: `user_buyer`
+   - Password: `Hello world!`
+   - Role: Buyer
+   - Deposit: 1000
+****
+2. **Seller User**
+   - Username: `user_seller`
+   - Password: `Hello world!`
+   - Role: Seller
+
+You can use these credentials to log in and test various functionalities of the application.
