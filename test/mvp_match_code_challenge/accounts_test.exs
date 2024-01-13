@@ -6,17 +6,6 @@ defmodule MvpMatchCodeChallenge.AccountsTest do
   import MvpMatchCodeChallenge.AccountsFixtures
   alias MvpMatchCodeChallenge.Accounts.{User, UserToken}
 
-  describe "get_user_by_username/1" do
-    test "does not return the user if the username does not exist" do
-      refute Accounts.get_user_by_username("unknown")
-    end
-
-    test "returns the user if the username exists" do
-      %{id: id} = user = user_fixture()
-      assert %User{id: ^id} = Accounts.get_user_by_username(user.username)
-    end
-  end
-
   describe "get_user_by_username_and_password/2" do
     test "does not return the user if the username does not exist" do
       refute Accounts.get_user_by_username_and_password("unknown", "hello world!")

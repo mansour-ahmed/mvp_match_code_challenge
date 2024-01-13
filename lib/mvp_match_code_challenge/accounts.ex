@@ -11,13 +11,6 @@ defmodule MvpMatchCodeChallenge.Accounts do
   ## Database getters
 
   @doc """
-  Gets a user by their username.
-  """
-  def get_user_by_username(username) when is_binary(username) do
-    Repo.get_by(User, username: username)
-  end
-
-  @doc """
   Gets a user by their username and password. Returns `nil` if either
   the user is not found or the password does not match.
   """
