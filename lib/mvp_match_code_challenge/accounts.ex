@@ -67,6 +67,10 @@ defmodule MvpMatchCodeChallenge.Accounts do
     User.password_changeset(user, attrs, hash_password: false)
   end
 
+  def change_user_deposit(%User{} = user, attrs \\ %{}) do
+    User.deposit_changeset(user, attrs)
+  end
+
   @doc """
   Updates the user's password after verifying the current password.
   """

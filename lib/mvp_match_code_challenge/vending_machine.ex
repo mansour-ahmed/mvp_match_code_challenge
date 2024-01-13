@@ -5,6 +5,8 @@ defmodule MvpMatchCodeChallenge.VendingMachine do
 
   @valid_coins [100, 50, 20, 10, 5]
 
+  def get_valid_coins, do: @valid_coins
+
   @doc """
   Adds a specified coin value to given user's deposit.
   Valid only for users with the `:buyer` role and when using valid coin denominations.
