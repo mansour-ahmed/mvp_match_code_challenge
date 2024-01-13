@@ -71,6 +71,22 @@ defmodule MvpMatchCodeChallengeWeb.UserAuth do
     end
   end
 
+  def on_mount(:ensure_seller_user, _params, session, socket) do
+    socket = mount_current_user(socket, session)
+    user_role = Map.get(socket.assigns.current_user, :role)
+
+    if user_role == :seller do
+      {:cont, socket}
+    else
+      socket =
+        socket
+        |> Phoenix.LiveView.put_flash(:error, "You must be a seller to access this page.")
+        |> Phoenix.LiveView.redirect(to: ~p"/")
+
+      {:halt, socket}
+    end
+  end
+
   defp mount_current_user(socket, session) do
     Phoenix.Component.assign_new(socket, :current_user, fn ->
       if user_token = session["user_token"] do
@@ -82,29 +98,54 @@ defmodule MvpMatchCodeChallengeWeb.UserAuth do
   @doc """
   Used for routes that require the user to not be authenticated.
   """
-  def redirect_if_user_is_authenticated(conn, _opts) do
-    if conn.assigns[:current_user] do
-      conn
-      |> redirect(to: signed_in_path(conn))
-      |> halt()
-    else
-      conn
-    end
+
+  def redirect_if_user_is_authenticated(
+        %{
+          assigns: %{
+            current_user: %{
+              id: _
+            }
+          }
+        } = conn,
+        _opts
+      ) do
+    conn
+    |> redirect(to: signed_in_path(conn))
+    |> halt()
   end
+
+  def redirect_if_user_is_authenticated(conn, _opts), do: conn
 
   @doc """
   Used for routes that require the user to be authenticated.
   """
+  def require_authenticated_user(
+        %{
+          assigns: %{
+            current_user: %{
+              id: _
+            }
+          }
+        } = conn,
+        _opts
+      ),
+      do: conn
+
   def require_authenticated_user(conn, _opts) do
-    if conn.assigns[:current_user] do
-      conn
-    else
-      conn
-      |> put_flash(:error, @login_required_message)
-      |> maybe_store_return_to()
-      |> redirect(to: log_in_path())
-      |> halt()
-    end
+    conn
+    |> put_flash(:error, @login_required_message)
+    |> maybe_store_return_to()
+    |> redirect(to: log_in_path())
+    |> halt()
+  end
+
+  def require_seller_user(%{assigns: %{current_user: %{role: :seller}}} = conn, _opts), do: conn
+
+  def require_seller_user(conn, _opts) do
+    conn
+    |> put_flash(:error, "You must be a seller to access this page.")
+    |> redirect(to: ~p"/")
+    |> halt()
   end
 
   defp signed_in_path(_conn), do: ~p"/"

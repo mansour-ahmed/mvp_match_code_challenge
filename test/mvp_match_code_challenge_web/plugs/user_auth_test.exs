@@ -129,6 +129,29 @@ defmodule MvpMatchCodeChallengeWeb.UserAuthTest do
     end
   end
 
+  describe "on_mount: :ensure_seller_user" do
+    test "redirects to / if user is not seller", %{conn: conn} do
+      user = user_fixture(role: :buyer)
+      user_token = Accounts.generate_user_session_token(user)
+
+      session =
+        conn
+        |> put_session(:user_token, user_token)
+        |> get_session()
+
+      socket = %LiveView.Socket{
+        endpoint: MvpMatchCodeChallengeWeb.Endpoint,
+        assigns: %{__changed__: %{}, flash: %{}}
+      }
+
+      {:halt, updated_socket} =
+        UserAuth.on_mount(:ensure_seller_user, %{}, session, socket)
+
+      flash = Phoenix.Flash.get(updated_socket.assigns.flash, :error)
+      assert flash == "You must be a seller to access this page."
+    end
+  end
+
   describe "redirect_if_user_is_authenticated/2" do
     test "redirects if user is authenticated", %{conn: conn, user: user} do
       conn =
