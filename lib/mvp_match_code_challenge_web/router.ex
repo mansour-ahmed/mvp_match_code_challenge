@@ -85,12 +85,6 @@ defmodule MvpMatchCodeChallengeWeb.Router do
     end
   end
 
-  scope "/", MvpMatchCodeChallengeWeb do
-    pipe_through :browser
-
-    get "/", PageController, :home
-  end
-
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:mvp_match_code_challenge, :dev_routes) do
     # If you want to use the LiveDashboard in production, you should put
