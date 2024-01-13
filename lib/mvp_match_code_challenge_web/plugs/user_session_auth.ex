@@ -4,6 +4,7 @@ defmodule MvpMatchCodeChallengeWeb.UserSessionAuth do
   import Plug.Conn
   import Phoenix.Controller
 
+  alias MvpMatchCodeChallenge.ApiTokens
   alias MvpMatchCodeChallenge.{Accounts, Accounts.UserToken}
 
   @max_age 60 * 60 * 24 * UserToken.get_session_validity_in_days()
@@ -42,6 +43,22 @@ defmodule MvpMatchCodeChallengeWeb.UserSessionAuth do
     user_token = get_session(conn, :user_token)
     user_token && Accounts.delete_user_session_token(user_token)
 
+    reset_current_session(conn)
+  end
+
+  @doc """
+  Logs the user out of all active sessions.
+
+  It clears all session data for safety. See renew_session.
+  """
+  def log_out_from_all(conn) do
+    user = Map.get(conn.assigns, :current_user)
+    user && ApiTokens.delete_all_user_tokens(user)
+
+    reset_current_session(conn)
+  end
+
+  defp reset_current_session(conn) do
     if live_socket_id = get_session(conn, :live_socket_id) do
       MvpMatchCodeChallengeWeb.Endpoint.broadcast(live_socket_id, "disconnect", %{})
     end

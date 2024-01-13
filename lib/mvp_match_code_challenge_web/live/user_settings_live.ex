@@ -1,4 +1,6 @@
 defmodule MvpMatchCodeChallengeWeb.UserSettingsLive do
+  alias MvpMatchCodeChallenge.VendingMachine
+  alias MvpMatchCodeChallenge.ApiTokens
   use MvpMatchCodeChallengeWeb, :live_view
 
   alias MvpMatchCodeChallenge.Accounts
@@ -10,6 +12,23 @@ defmodule MvpMatchCodeChallengeWeb.UserSettingsLive do
       <:subtitle>Manage your account password settings</:subtitle>
     </.header>
     <div class="space-y-12 divide-y">
+      <.table id="sessions" rows={[@user_active_tokens_count]}>
+        <:col :let={session_stat} label="Active Web Sessions">
+          <%= session_stat.session_token_count %>
+        </:col>
+        <:col :let={session_stat} label="Active API Tokens">
+          <%= session_stat.api_token_count %>
+        </:col>
+        <:action :let={_}>
+          <.link
+            data-confirm="Are you sure? Afterwards all of your active api & web tokens won't work anymore."
+            href={~p"/users/log_out/all"}
+            method="delete"
+          >
+            <.button class="bg-red-600 hover:bg-red-500">Log out of all active sessions</.button>
+          </.link>
+        </:action>
+      </.table>
       <div>
         <.simple_form
           for={@password_form}
@@ -53,6 +72,7 @@ defmodule MvpMatchCodeChallengeWeb.UserSettingsLive do
   def mount(_params, _session, socket) do
     user = socket.assigns.current_user
     password_changeset = Accounts.change_user_password(user)
+    user_active_tokens_count = ApiTokens.get_user_active_tokens_count(user)
 
     socket =
       socket
@@ -61,6 +81,7 @@ defmodule MvpMatchCodeChallengeWeb.UserSettingsLive do
       |> assign(:current_username, user.username)
       |> assign(:password_form, to_form(password_changeset))
       |> assign(:trigger_submit, false)
+      |> assign(:user_active_tokens_count, user_active_tokens_count)
 
     {:ok, socket}
   end
@@ -75,6 +96,29 @@ defmodule MvpMatchCodeChallengeWeb.UserSettingsLive do
       |> to_form()
 
     {:noreply, assign(socket, password_form: password_form, current_password: password)}
+  end
+
+  def handle_event(
+        "deposit_coin",
+        %{"user" => %{"deposit" => deposit}},
+        %{assigns: %{current_user: current_user}} = socket
+      ) do
+    case VendingMachine.add_coin_to_user_deposit(current_user, String.to_integer(deposit)) do
+      {:ok, user} ->
+        deposit_form =
+          user
+          |> Accounts.change_user_deposit(%{deposit: nil})
+          |> to_form()
+
+        {:noreply,
+         socket
+         |> assign(deposit_form: deposit_form)
+         |> put_flash(:success, "Coin deposited successfully")
+         |> assign(current_user: user)}
+
+      {:error, changeset} ->
+        {:noreply, assign(socket, deposit_form: to_form(changeset))}
+    end
   end
 
   def handle_event("update_password", params, socket) do

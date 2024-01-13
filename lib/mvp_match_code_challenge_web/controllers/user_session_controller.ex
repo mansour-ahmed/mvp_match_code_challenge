@@ -42,6 +42,12 @@ defmodule MvpMatchCodeChallengeWeb.UserSessionController do
     |> UserSessionAuth.log_out_user()
   end
 
+  def delete_all(conn, _params) do
+    conn
+    |> put_flash(:info, "Logged out of all active sessions successfully.")
+    |> UserSessionAuth.log_out_from_all()
+  end
+
   def create_api_token(conn, %{"user" => user_params}) do
     %{"username" => username, "password" => password} = user_params
 
