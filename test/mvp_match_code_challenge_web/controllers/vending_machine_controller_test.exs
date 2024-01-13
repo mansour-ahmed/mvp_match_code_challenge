@@ -26,7 +26,7 @@ defmodule MvpMatchCodeChallengeWeb.VendingMachineControllerTest do
     test "renders errors when user is not logged in", %{conn: conn, product: product} do
       conn =
         post(conn, ~p"/api/products/#{product.id}/buy", %{
-          amount: 1
+          transaction_product_amount: 1
         })
 
       assert response(conn, 401) == "You must use a valid token to access this resource."
@@ -35,10 +35,43 @@ defmodule MvpMatchCodeChallengeWeb.VendingMachineControllerTest do
     test "renders errors when product is not found", %{conn_with_token: conn} do
       conn =
         post(conn, ~p"/api/products/-1/buy", %{
-          amount: 1
+          transaction_product_amount: 1
         })
 
       assert json_response(conn, 404)["errors"] == %{"detail" => "Not Found"}
+    end
+
+    test "renders error when buyer tries to buy more than available", %{
+      conn_with_token: conn,
+      product: product
+    } do
+      conn =
+        post(conn, ~p"/api/products/#{product.id}/buy", %{
+          transaction_product_amount: 10
+        })
+
+      assert %{
+               "transaction_product_amount" => [
+                 "must have enough stock to cover given product amount"
+               ]
+             } == json_response(conn, 422)["errors"]
+    end
+
+    test "renders error when buyer tries to buy with insufficient funds", %{
+      conn_with_token: conn
+    } do
+      product = product_fixture(%{amount_available: 5, cost: 100_000})
+
+      conn =
+        post(conn, ~p"/api/products/#{product.id}/buy", %{
+          transaction_product_amount: 3
+        })
+
+      assert %{
+               "transaction_product_amount" => [
+                 "must have enough funds to buy product with given amount"
+               ]
+             } == json_response(conn, 422)["errors"]
     end
 
     test "allows only buyers to buy products", %{conn: conn, product: product} do
@@ -48,7 +81,7 @@ defmodule MvpMatchCodeChallengeWeb.VendingMachineControllerTest do
 
       conn =
         post(conn_with_token, ~p"/api/products/#{product.id}/buy", %{
-          amount: 1
+          transaction_product_amount: 1
         })
 
       assert response(conn, 401) == "You must be a buyer to access this resource."
@@ -57,7 +90,7 @@ defmodule MvpMatchCodeChallengeWeb.VendingMachineControllerTest do
     test "renders transaction when product is found", %{conn_with_token: conn, product: product} do
       conn =
         post(conn, ~p"/api/products/#{product.id}/buy", %{
-          amount: 1
+          transaction_product_amount: 1
         })
 
       assert %{

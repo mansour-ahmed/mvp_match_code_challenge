@@ -1,7 +1,6 @@
 defmodule MvpMatchCodeChallenge.VendingMachine do
-  alias MvpMatchCodeChallenge.Products.Product
-  alias MvpMatchCodeChallenge.Accounts.User
-  alias MvpMatchCodeChallenge.{Repo, Accounts}
+  alias MvpMatchCodeChallenge.Products.{Product, ProductTransaction}
+  alias MvpMatchCodeChallenge.{Repo, Accounts, Accounts.User}
   alias Decimal, as: D
 
   @valid_coins [100, 50, 20, 10, 5]
@@ -28,33 +27,40 @@ defmodule MvpMatchCodeChallenge.VendingMachine do
   Handles the purchase of products by given user.
   Verifies fund sufficiency, stock availability, and calculates the change to be returned.
   """
-  def buy_product(%Product{} = product, %User{} = buyer, products_amount)
-      when is_integer(products_amount) do
-    total_product_cost = D.mult(product.cost, products_amount)
+  def buy_product(%Product{} = product, %User{} = buyer, transaction_product_amount)
+      when is_integer(transaction_product_amount) do
+    total_product_cost = D.mult(product.cost, transaction_product_amount)
     buyer_balance = D.new(buyer.deposit)
 
-    cond do
-      buyer_balance < total_product_cost ->
-        {:error, :insufficient_funds}
+    changeset =
+      transaction_changeset(%{
+        transaction_product_amount: transaction_product_amount,
+        product_total_cost: total_product_cost,
+        product_available_amount: product.amount_available,
+        buyer_available_funds: buyer_balance
+      })
 
-      product.amount_available < products_amount ->
-        {:error, :out_of_stock}
-
-      true ->
-        buy_product_transaction(
-          buyer_balance,
-          total_product_cost,
-          buyer,
-          product,
-          products_amount
-        )
+    if changeset.valid? do
+      buy_product_transaction(
+        buyer_balance,
+        total_product_cost,
+        buyer,
+        product,
+        transaction_product_amount
+      )
+    else
+      {:error, changeset}
     end
   end
 
-  defp buy_product_transaction(balance, total_cost, buyer, product, products_amount) do
+  def transaction_changeset(attrs) do
+    ProductTransaction.changeset(attrs)
+  end
+
+  defp buy_product_transaction(balance, total_cost, buyer, product, transaction_product_amount) do
     {_, change_coins} = calculate_change(balance, total_cost)
     new_balance = Enum.sum(change_coins)
-    new_amount_available = product.amount_available - products_amount
+    new_amount_available = product.amount_available - transaction_product_amount
 
     total_cost_after_transaction =
       balance

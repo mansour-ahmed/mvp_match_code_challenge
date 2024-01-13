@@ -1,6 +1,7 @@
 defmodule MvpMatchCodeChallengeWeb.VendingMachineController do
   use MvpMatchCodeChallengeWeb, :controller
 
+  alias Ecto.Changeset
   alias MvpMatchCodeChallenge.VendingMachine
   alias MvpMatchCodeChallenge.Products
 
@@ -12,13 +13,20 @@ defmodule MvpMatchCodeChallengeWeb.VendingMachineController do
             current_user: current_user
           }
         } = conn,
-        %{"id" => product_id, "amount" => amount}
+        %{"id" => product_id, "transaction_product_amount" => amount}
       ) do
     try do
       product = Products.get_product!(product_id)
 
-      with {:ok, result} <- VendingMachine.buy_product(product, current_user, amount) do
-        render(conn, :buy_transaction, result)
+      case VendingMachine.buy_product(product, current_user, amount) do
+        {:ok, result} ->
+          render(conn, :buy_transaction, result)
+
+        {:error, %Changeset{} = changeset} ->
+          {:error, changeset}
+
+        _ ->
+          {:error, :internal_server_error}
       end
     rescue
       Ecto.NoResultsError -> {:error, :not_found}

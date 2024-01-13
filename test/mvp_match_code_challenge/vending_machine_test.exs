@@ -46,16 +46,28 @@ defmodule MvpMatchCodeChallenge.VendingMachineTest do
           deposit: 5
         })
 
-      assert VendingMachine.buy_product(product, buyer_with_little_deposit, 1) ==
-               {:error, :insufficient_funds}
+      assert {:error, changeset} =
+               VendingMachine.buy_product(product, buyer_with_little_deposit, 1)
+
+      assert %{
+               transaction_product_amount: [
+                 "must have enough funds to buy product with given amount"
+               ]
+             } = errors_on(changeset)
     end
 
     test "returns {:error, :out_of_stock} if product is out of stock" do
       buyer = user_fixture(%{deposit: 100})
       product = ProductsFixtures.product_fixture(%{amount_available: 1, cost: 10})
 
-      assert VendingMachine.buy_product(product, buyer, 2) ==
-               {:error, :out_of_stock}
+      assert {:error, changeset} =
+               VendingMachine.buy_product(product, buyer, 2)
+
+      assert %{
+               transaction_product_amount: [
+                 "must have enough stock to cover given product amount"
+               ]
+             } = errors_on(changeset)
     end
 
     test "returns {:ok, result} if product can be bought" do
