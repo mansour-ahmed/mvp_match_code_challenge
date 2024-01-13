@@ -10,7 +10,7 @@ defmodule MvpMatchCodeChallengeWeb.ProductLive.Show do
       Product <%= @product.id %>
       <:subtitle>This is a product record from your database.</:subtitle>
       <:actions>
-        <%= if @product.seller_id == @current_user.id do %>
+        <%= if @current_user && @product.seller_id == @current_user.id do %>
           <.link patch={~p"/products/#{@product}/show/edit"} phx-click={JS.push_focus()}>
             <.button>Edit product</.button>
           </.link>

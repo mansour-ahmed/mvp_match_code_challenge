@@ -19,9 +19,9 @@ defmodule MvpMatchCodeChallengeWeb.ProductLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
+        <.input field={@form[:product_name]} type="text" label="Product name" />
         <.input field={@form[:amount_available]} type="number" label="Amount available" />
         <.input field={@form[:cost]} type="number" label="Cost" step="any" />
-        <.input field={@form[:product_name]} type="text" label="Product name" />
         <:actions>
           <.button phx-disable-with="Saving...">Save Product</.button>
         </:actions>

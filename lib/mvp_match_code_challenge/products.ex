@@ -18,7 +18,7 @@ defmodule MvpMatchCodeChallenge.Products do
 
   """
   def list_products do
-    Repo.all(Product)
+    Repo.all(from t in Product, order_by: [desc: t.inserted_at])
   end
 
   @doc """
