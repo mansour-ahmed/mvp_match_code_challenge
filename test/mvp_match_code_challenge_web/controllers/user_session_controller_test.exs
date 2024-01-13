@@ -99,13 +99,17 @@ defmodule MvpMatchCodeChallengeWeb.UserSessionControllerTest do
   describe "POST /api/session/token" do
     test "returns 400 when no correct params are sent", %{conn: conn} do
       conn = post(conn, ~p"/api/session/token", %{})
-      assert json_response(conn, 400)["errors"] == %{"detail" => "Bad Request"}
+
+      assert json_response(conn, 400)["errors"] == %{
+               "details" => "Invalid params. Please provide a username and password."
+             }
     end
 
     test "returns 401 when credentials are incorrect", %{conn: conn} do
       conn =
         post(conn, ~p"/api/session/token", %{
-          "user" => %{"username" => "invalid_username", "password" => "invalid_password"}
+          "username" => "invalid_username",
+          "password" => "invalid_password"
         })
 
       assert response(conn, 401) == "Invalid username or password"
@@ -114,12 +118,16 @@ defmodule MvpMatchCodeChallengeWeb.UserSessionControllerTest do
     test "returns user token when credentials are valid", %{conn: conn, user: user} do
       conn =
         post(conn, ~p"/api/session/token", %{
-          "user" => %{"username" => user.username, "password" => valid_user_password()}
+          "username" => user.username,
+          "password" => valid_user_password()
         })
+
+      user_id = user.id
 
       assert %{
                "tokens_count" =>
-                 "You have 1 active API tokens and 0 web sessions. You can log out of all sessions by visiting api/users/log_out/all"
+                 "You have 1 active API tokens and 0 web sessions. You can log out of all sessions by visiting api/users/log_out/all",
+               "user_id" => ^user_id
              } = json_response(conn, 200)["data"]
     end
   end

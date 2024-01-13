@@ -67,12 +67,16 @@ defmodule MvpMatchCodeChallengeWeb.ApiAuth do
   end
 
   defp check_user_admin(%{params: %{"id" => user_id}} = conn, current_user_id, _) do
-    user = Accounts.get_user(user_id)
+    try do
+      case Accounts.get_user(user_id) do
+        %{id: ^current_user_id} ->
+          conn
 
-    if user && user.id === current_user_id do
-      conn
-    else
-      unauthorized_response(conn, @unauthorized_message)
+        _ ->
+          unauthorized_response(conn, @unauthorized_message)
+      end
+    rescue
+      _ -> unauthorized_response(conn, @unauthorized_message)
     end
   end
 

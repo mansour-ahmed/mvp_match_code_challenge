@@ -66,11 +66,9 @@ defmodule MvpMatchCodeChallengeWeb.ProductControllerTest do
 
       conn =
         post(conn_with_token, ~p"/api/products",
-          product: %{
-            product_name: "some product_name",
-            cost: 1,
-            amount_available: 1
-          }
+          product_name: "some product_name",
+          cost: 1,
+          amount_available: 1
         )
 
       assert response(conn, 401) == "You must be a seller to access this resource."
@@ -85,11 +83,9 @@ defmodule MvpMatchCodeChallengeWeb.ProductControllerTest do
 
       conn =
         post(conn, ~p"/api/products",
-          product: %{
-            product_name: product_name,
-            cost: cost,
-            amount_available: amount_available
-          }
+          product_name: product_name,
+          cost: cost,
+          amount_available: amount_available
         )
 
       assert %{"id" => id} = json_response(conn, 201)["data"]
@@ -128,11 +124,7 @@ defmodule MvpMatchCodeChallengeWeb.ProductControllerTest do
 
     test "renders errors when data is invalid", %{conn_with_token: conn, product: product} do
       conn =
-        put(conn, ~p"/api/products/#{product}",
-          product: %{
-            cost: -1
-          }
-        )
+        put(conn, ~p"/api/products/#{product}", cost: -1)
 
       assert json_response(conn, 422)["errors"] == %{
                "cost" => ["must be greater than 0"]
@@ -146,7 +138,7 @@ defmodule MvpMatchCodeChallengeWeb.ProductControllerTest do
       new_product_name = "some updated product_name"
 
       conn =
-        put(conn, ~p"/api/products/#{product}", product: %{product_name: new_product_name})
+        put(conn, ~p"/api/products/#{product}", %{product_name: new_product_name})
 
       assert %{"id" => ^id} = json_response(conn, 200)["data"]
 

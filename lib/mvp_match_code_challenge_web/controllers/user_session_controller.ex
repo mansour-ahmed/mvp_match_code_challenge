@@ -48,9 +48,7 @@ defmodule MvpMatchCodeChallengeWeb.UserSessionController do
     |> UserSessionAuth.log_out_from_all()
   end
 
-  def create_api_token(conn, %{"user" => user_params}) do
-    %{"username" => username, "password" => password} = user_params
-
+  def create_api_token(conn, %{"username" => username, "password" => password}) do
     if user = Accounts.get_user_by_username_and_password(username, password) do
       token = ApiTokens.create_user_api_token(user)
 
@@ -63,7 +61,8 @@ defmodule MvpMatchCodeChallengeWeb.UserSessionController do
         data: %{
           token: token,
           tokens_count:
-            "You have #{api_token_count} active API tokens and #{session_token_count} web sessions. You can log out of all sessions by visiting api/users/log_out/all"
+            "You have #{api_token_count} active API tokens and #{session_token_count} web sessions. You can log out of all sessions by visiting api/users/log_out/all",
+          user_id: user.id
         }
       })
     else
@@ -73,7 +72,8 @@ defmodule MvpMatchCodeChallengeWeb.UserSessionController do
     end
   end
 
-  def create_api_token(_conn, _params), do: {:error, :bad_request}
+  def create_api_token(_, _),
+    do: {:error, :bad_request, "Invalid params. Please provide a username and password."}
 
   def delete_all_tokens(
         %{

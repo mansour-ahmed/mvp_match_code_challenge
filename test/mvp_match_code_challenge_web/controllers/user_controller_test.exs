@@ -55,12 +55,16 @@ defmodule MvpMatchCodeChallengeWeb.UserControllerTest do
     test "returns 400 when invalid params are used", %{conn: conn} do
       conn = post(conn, "/api/users", %{})
 
-      assert json_response(conn, 400)["errors"] === %{"detail" => "Bad Request"}
+      assert json_response(conn, 422)["errors"] === %{
+               "password" => ["can't be blank"],
+               "role" => ["can't be blank"],
+               "username" => ["can't be blank"]
+             }
     end
 
     test "returns 201 when valid params are used", %{conn: conn} do
       user_attrs = valid_user_attributes(%{deposit: 100, role: "buyer"})
-      conn = post(conn, "/api/users", %{user: user_attrs})
+      conn = post(conn, "/api/users", user_attrs)
 
       assert user = json_response(conn, 201)["data"]
 

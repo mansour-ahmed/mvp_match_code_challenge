@@ -39,7 +39,11 @@ defmodule MvpMatchCodeChallengeWeb.ProductAuth do
   end
 
   defp user_is_product_seller?(product_id, user_id) do
-    Products.get_product_by_seller_id(product_id, user_id) != nil
+    try do
+      Products.get_product_by_seller_id(product_id, user_id) != nil
+    rescue
+      _ -> false
+    end
   end
 
   defp continue_context(context, :socket), do: {:cont, context}

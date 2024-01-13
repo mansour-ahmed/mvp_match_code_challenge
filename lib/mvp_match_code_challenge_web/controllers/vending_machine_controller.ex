@@ -30,6 +30,8 @@ defmodule MvpMatchCodeChallengeWeb.VendingMachineController do
       end
     rescue
       Ecto.NoResultsError -> {:error, :not_found}
+      Ecto.Query.CastError -> {:error, :bad_request}
+      _ -> {:error, :internal_server_error}
     end
   end
 

@@ -17,6 +17,8 @@ defmodule MvpMatchCodeChallengeWeb.ProductController do
       render(conn, :show, product: product)
     rescue
       Ecto.NoResultsError -> {:error, :not_found}
+      Ecto.Query.CastError -> {:error, :bad_request}
+      _ -> {:error, :internal_server_error}
     end
   end
 
@@ -29,7 +31,7 @@ defmodule MvpMatchCodeChallengeWeb.ProductController do
               } = current_user
           }
         } = conn,
-        %{"product" => product_params}
+        product_params
       ) do
     seller_id = current_user.id
 
@@ -49,21 +51,37 @@ defmodule MvpMatchCodeChallengeWeb.ProductController do
 
   def create(_conn, _params), do: {:error, :bad_request}
 
-  def update(conn, %{"id" => id, "product" => product_params}) do
-    product = Products.get_product!(id)
+  def update(conn, %{"id" => id} = product_params) do
+    try do
+      with product <- Products.get_product!(id),
+           {:ok, %Product{} = updated_product} <- Products.update_product(product, product_params) do
+        render(conn, :show, product: updated_product)
+      else
+        {:error, %Ecto.Changeset{} = changeset} ->
+          {:error, changeset}
+      end
+    rescue
+      Ecto.NoResultsError ->
+        {:error, :not_found}
 
-    with {:ok, %Product{} = product} <- Products.update_product(product, product_params) do
-      render(conn, :show, product: product)
+      Ecto.Query.CastError ->
+        {:error, :bad_request}
+
+      _ ->
+        {:error, :internal_server_error}
     end
   end
 
   def update(_conn, _params), do: {:error, :bad_request}
 
   def delete(conn, %{"id" => id}) do
-    product = Products.get_product!(id)
-
-    with {:ok, %Product{}} <- Products.delete_product(product) do
+    with product <- Products.get_product!(id),
+         {:ok, %Product{}} <- Products.delete_product(product) do
       send_resp(conn, :no_content, "")
+    else
+      Ecto.NoResultsError -> {:error, :not_found}
+      Ecto.Query.CastError -> {:error, :bad_request}
+      _ -> {:error, :internal_server_error}
     end
   end
 end

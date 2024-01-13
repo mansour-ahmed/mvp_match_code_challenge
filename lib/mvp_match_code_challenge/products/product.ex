@@ -41,19 +41,28 @@ defmodule MvpMatchCodeChallenge.Products.Product do
   defp validate_existing_user(changeset, nil), do: changeset
 
   defp validate_existing_user(changeset, user_id) do
-    user = Accounts.get_user(user_id)
-
-    cond do
-      user == nil ->
-        add_error(changeset, :seller_id, "does not exist")
-
-      user.role != :seller ->
-        add_error(changeset, :seller_id, "user must have a seller role")
-
-      true ->
-        changeset
+    with {:ok, user} <- fetch_user(user_id),
+         :ok <- validate_user_role(user) do
+      changeset
+    else
+      {:error, message} -> add_error(changeset, :seller_id, message)
     end
   end
+
+  defp fetch_user(user_id) do
+    try do
+      case Accounts.get_user(user_id) do
+        nil -> {:error, "does not exist"}
+        user -> {:ok, user}
+      end
+    rescue
+      Ecto.Query.CastError -> {:error, "invalid user id"}
+      _ -> {:error, "unknown error"}
+    end
+  end
+
+  defp validate_user_role(user),
+    do: if(user.role != :seller, do: {:error, "user must have a seller role"}, else: :ok)
 
   defp validate_amount_available(changeset) do
     changeset
