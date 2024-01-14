@@ -62,7 +62,9 @@ defmodule MvpMatchCodeChallengeWeb.ProductLive.BuyFormComponent do
       buy_product(socket, String.to_integer(transaction_product_amount))
     rescue
       _ ->
-        {:noreply, socket}
+        {:noreply,
+         socket
+         |> put_flash(:error, "Something went wrong, please try again.")}
     end
   end
 

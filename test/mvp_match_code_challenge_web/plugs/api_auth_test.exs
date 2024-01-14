@@ -141,6 +141,20 @@ defmodule MvpMatchCodeChallengeWeb.ApiAuthTest do
       assert conn.resp_body == "Not authorized"
     end
 
+    test "responds with 401 if user id is not valid", %{conn: conn, user: user} do
+      params = %{"id" => "foo"}
+
+      conn =
+        %{conn | params: params}
+        |> assign(:current_user, user)
+        |> fetch_flash()
+        |> ApiAuth.api_require_user_admin([])
+
+      assert conn.halted
+      assert conn.status == 401
+      assert conn.resp_body == "Not authorized"
+    end
+
     test "does not respond with 401 if user is admin", %{conn: conn, user: user} do
       params = %{"id" => user.id}
 

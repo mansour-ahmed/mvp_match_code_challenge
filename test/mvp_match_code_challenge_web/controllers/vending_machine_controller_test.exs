@@ -41,6 +41,15 @@ defmodule MvpMatchCodeChallengeWeb.VendingMachineControllerTest do
       assert json_response(conn, 404)["errors"] == %{"detail" => "Not Found"}
     end
 
+    test "renders errors when product id is not valid", %{conn_with_token: conn} do
+      conn =
+        post(conn, ~p"/api/products/foo/buy", %{
+          transaction_product_amount: 1
+        })
+
+      assert json_response(conn, 400)["errors"] == %{"detail" => "Bad Request"}
+    end
+
     test "renders error when buyer tries to buy more than available", %{
       conn_with_token: conn,
       product: product

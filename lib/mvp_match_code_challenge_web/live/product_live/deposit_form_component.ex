@@ -50,7 +50,9 @@ defmodule MvpMatchCodeChallengeWeb.ProductLive.DepositFormComponent do
       deposit_coins(socket, user, String.to_integer(deposit))
     rescue
       _ ->
-        {:noreply, socket}
+        {:noreply,
+         socket
+         |> put_flash(:error, "Something went wrong, please try again.")}
     end
   end
 

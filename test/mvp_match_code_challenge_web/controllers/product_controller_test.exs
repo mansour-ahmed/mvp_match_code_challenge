@@ -25,7 +25,7 @@ defmodule MvpMatchCodeChallengeWeb.ProductControllerTest do
     }
   end
 
-  describe "index" do
+  describe "GET /api/products" do
     test "lists all products", %{conn: conn, product: product, random_product: random_product} do
       conn = get(conn, ~p"/api/products")
       products_in_json = [product, random_product] |> Enum.map(&product_json/1)
@@ -33,7 +33,17 @@ defmodule MvpMatchCodeChallengeWeb.ProductControllerTest do
     end
   end
 
-  describe "show" do
+  describe "GET /api/products/:id" do
+    test "returns 400 when id is invalid", %{conn: conn} do
+      conn = get(conn, ~p"/api/products/foo")
+      assert json_response(conn, 400)["errors"] == %{"detail" => "Bad Request"}
+    end
+
+    test "returns 404 when id is not found", %{conn: conn} do
+      conn = get(conn, ~p"/api/products/232322")
+      assert json_response(conn, 404)["errors"] == %{"detail" => "Not Found"}
+    end
+
     test "lists all products", %{conn: conn, product: product} do
       conn = get(conn, ~p"/api/products/#{product}")
       product_in_json = product_json(product)
@@ -41,7 +51,7 @@ defmodule MvpMatchCodeChallengeWeb.ProductControllerTest do
     end
   end
 
-  describe "create product" do
+  describe "POST /api/products" do
     test "renders errors when user is not logged in", %{conn: conn} do
       conn = post(conn, ~p"/api/products", product: valid_product_attributes())
       assert response(conn, 401) == "You must use a valid token to access this resource."
@@ -103,12 +113,28 @@ defmodule MvpMatchCodeChallengeWeb.ProductControllerTest do
     end
   end
 
-  describe "update product" do
+  describe "PUT /api/products/:id" do
     test "renders errors when user is not logged in", %{conn: conn, product: product} do
       conn =
         put(conn, ~p"/api/products/#{product}", product: valid_product_attributes())
 
       assert response(conn, 401) == "You must use a valid token to access this resource."
+    end
+
+    test "renders errors when product id is not valid", %{conn_with_token: conn} do
+      conn =
+        put(conn, ~p"/api/products/foo", product: valid_product_attributes())
+
+      assert response(conn, 401) ==
+               "You must be the seller of the product to access this resource."
+    end
+
+    test "renders errors when product id is not found", %{conn_with_token: conn} do
+      conn =
+        put(conn, ~p"/api/products/123232", product: valid_product_attributes())
+
+      assert response(conn, 401) ==
+               "You must be the seller of the product to access this resource."
     end
 
     test "renders errors when user is not product seller", %{
@@ -151,7 +177,7 @@ defmodule MvpMatchCodeChallengeWeb.ProductControllerTest do
     end
   end
 
-  describe "delete product" do
+  describe "DELETE /api/products/:id" do
     test "renders errors when user is not logged in", %{conn: conn, product: product} do
       conn = delete(conn, ~p"/api/products/#{product}")
 

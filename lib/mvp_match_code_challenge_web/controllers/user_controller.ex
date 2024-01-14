@@ -31,16 +31,18 @@ defmodule MvpMatchCodeChallengeWeb.UserController do
   end
 
   def delete(conn, %{"id" => id}) do
-    user = Accounts.get_user(id)
+    try do
+      case Accounts.get_user(id) do
+        nil ->
+          {:error, :not_found}
 
-    case user do
-      nil ->
-        {:error, :not_found}
-
-      _ ->
-        with :ok <- Accounts.delete_user(user) do
+        user ->
+          :ok = Accounts.delete_user(user)
           send_resp(conn, :no_content, "")
-        end
+      end
+    rescue
+      Ecto.Query.CastError -> {:error, :bad_request}
+      _ -> {:error, :internal_server_error}
     end
   end
 
@@ -60,8 +62,8 @@ defmodule MvpMatchCodeChallengeWeb.UserController do
   def deposit(conn, %{"id" => id, "coin" => coin}) do
     with {:ok, user} <- get_user(id),
          {:ok, parsed_coin} <- parse_coin(coin),
-         {:ok, user} <- VendingMachine.add_coin_to_user_deposit(user, parsed_coin) do
-      render(conn, :show, user: user)
+         {:ok, updated_user} <- VendingMachine.add_coin_to_user_deposit(user, parsed_coin) do
+      render(conn, :show, user: updated_user)
     else
       {:error, :invalid_coin} ->
         {:error, :bad_request, "Invalid coin value. Only 5, 10, 20, 50, 100 coins are allowed."}

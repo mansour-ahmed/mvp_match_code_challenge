@@ -80,6 +80,10 @@ defmodule MvpMatchCodeChallenge.ProductsTest do
     end
 
     test "validates seller_id" do
+      product = valid_product_attributes(%{seller_id: "foo"})
+      {:error, changeset} = Products.create_product(product)
+      assert %{seller_id: ["invalid user id", "is invalid"]} = errors_on(changeset)
+
       product = valid_product_attributes(%{seller_id: -1})
       {:error, changeset} = Products.create_product(product)
       assert %{seller_id: ["does not exist"]} = errors_on(changeset)

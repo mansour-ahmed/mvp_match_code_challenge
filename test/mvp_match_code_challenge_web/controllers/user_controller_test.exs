@@ -44,6 +44,12 @@ defmodule MvpMatchCodeChallengeWeb.UserControllerTest do
       assert response(conn, 401) == "Not authorized"
     end
 
+    test "returns 401 when user id is not valid", %{conn_with_token: conn} do
+      conn = get(conn, "/api/users/foo")
+
+      assert response(conn, 401) == "Not authorized"
+    end
+
     test "returns 200 when user is found", %{conn_with_token: conn, user: user} do
       conn = get(conn, "/api/users/#{user.id}")
 
@@ -92,6 +98,12 @@ defmodule MvpMatchCodeChallengeWeb.UserControllerTest do
 
     test "returns 401 when user is not found", %{conn_with_token: conn} do
       conn = delete(conn, "/api/users/223232")
+
+      assert response(conn, 401) == "Not authorized"
+    end
+
+    test "returns 401 when user id is not valid", %{conn_with_token: conn} do
+      conn = delete(conn, "/api/users/foo")
 
       assert response(conn, 401) == "Not authorized"
     end

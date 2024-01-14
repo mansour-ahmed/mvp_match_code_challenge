@@ -16,12 +16,10 @@ defmodule MvpMatchCodeChallengeWeb.VendingMachineController do
         %{"id" => product_id, "transaction_product_amount" => amount}
       ) do
     try do
-      product = Products.get_product!(product_id)
-
-      case VendingMachine.buy_product(product, current_user, amount) do
-        {:ok, result} ->
-          render(conn, :buy_transaction, result)
-
+      with product <- Products.get_product!(product_id),
+           {:ok, result} <- VendingMachine.buy_product(product, current_user, amount) do
+        render(conn, :buy_transaction, result)
+      else
         {:error, %Changeset{} = changeset} ->
           {:error, changeset}
 
