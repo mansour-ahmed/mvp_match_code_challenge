@@ -3,12 +3,12 @@ defmodule MvpMatchCodeChallengeWeb.Layouts do
 
   def app(assigns) do
     ~H"""
-    <header class="py-2 px-2 flex flex-row justify-between">
+    <header class="py-2 px-2 sm:px-10 flex flex-col sm:flex-row justify-center items-center sm:justify-between">
       <.link href={~p"/"}>
-        <img src="/images/logo.png" alt="App Logo" class="w-24" />
+        <img src="/images/logo.png" alt="App Logo" class="w-12 sm:w-24" />
       </.link>
-      <ul class="relative flex items-center gap-8 px-4 sm:px-6 lg:px-8 justify-end">
-        <li :if={@current_user} class="text-2xl leading-6 text-zinc-900">
+      <ul class="relative flex flex-wrap items-center gap-4 sm:gap-8 px-4 sm:px-6 lg:px-8 sm:justify-end">
+        <li :if={@current_user} class="sm:text-2xl leading-6 text-zinc-900">
           <%= @current_user.username %> (<%= @current_user.role %>)
         </li>
         <li>
@@ -62,7 +62,7 @@ defmodule MvpMatchCodeChallengeWeb.Layouts do
     <.link
       href={@href}
       method={@method}
-      class="text-2xl leading-6 text-orange-600  hover:text-orange-900"
+      class="sm:text-2xl leading-6 text-orange-600 hover:text-orange-900"
     >
       <%= render_slot(@inner_block) %>
     </.link>
@@ -71,7 +71,7 @@ defmodule MvpMatchCodeChallengeWeb.Layouts do
 
   defp footer(assigns) do
     ~H"""
-    <footer class="flex flex-row items-center justify-center gap-8 pt-24 pb-6">
+    <footer class="flex flex-row items-center justify-center gap-8 px-2  pt-12 sm:pt-24 pb-6">
       <aside>
         Created by Ahmed Mansour
       </aside>

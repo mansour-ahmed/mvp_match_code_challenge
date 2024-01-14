@@ -3,14 +3,14 @@ defmodule MvpMatchCodeChallengeWeb.HomeLive do
 
   def render(assigns) do
     ~H"""
-    <div class="mt-[calc(50%_-_16rem)]">
+    <div class="md:mt-[calc(50%_-_16rem)]">
       <div class="flex sm:flex-row flex-col justify-center items-center sm:justify-between gap-7">
         <div class="flex flex-col sm:items-start items-center gap-10">
-          <h1 class="text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-tr from-orange-600 via-orange-400 to-orange-100 text-center sm:text-left">
+          <h1 class="text-5xl sm:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-tr from-orange-600 via-orange-400 to-orange-100 text-center sm:text-left">
             Phoenix Vending Machine
           </h1>
           <.link href={~p"/products"}>
-            <button class="text-xl font-semibold text-white bg-orange-600 rounded-lg p-4 hover:bg-orange-500">
+            <button class="text-lg sm:text-xl font-semibold text-white bg-orange-600 rounded-lg p-3 sm:p-4 hover:bg-orange-500">
               Go to products
             </button>
           </.link>

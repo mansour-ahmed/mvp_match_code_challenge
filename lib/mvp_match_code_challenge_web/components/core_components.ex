@@ -66,7 +66,7 @@ defmodule MvpMatchCodeChallengeWeb.CoreComponents do
               phx-window-keydown={JS.exec("data-cancel", to: "##{@id}")}
               phx-key="escape"
               phx-click-away={JS.exec("data-cancel", to: "##{@id}")}
-              class="shadow-zinc-700/10 ring-zinc-700/10 relative hidden rounded-2xl bg-white p-14 shadow-lg ring-1 transition"
+              class="shadow-zinc-700/10 ring-zinc-700/10 relative hidden rounded-2xl bg-white sm:p-14 p-10 shadow-lg ring-1 transition"
             >
               <div class="absolute top-6 right-5">
                 <button
@@ -115,7 +115,7 @@ defmodule MvpMatchCodeChallengeWeb.CoreComponents do
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
       role="alert"
       class={[
-        "fixed top-24 right-2 mr-2 w-80 sm:w-96 z-50 rounded-lg p-3 ring-1",
+        "fixed top-24 sm:right-2 mr-2 max-w-[calc(100%_-_1rem)] sm:max-w-full w-80 sm:w-96 z-50 rounded-lg p-3 ring-1",
         @kind == :info && "bg-emerald-50 text-emerald-800 ring-emerald-500 fill-cyan-900",
         @kind == :error && "bg-rose-50 text-rose-900 shadow-md ring-rose-500 fill-rose-900"
       ]}
@@ -231,7 +231,7 @@ defmodule MvpMatchCodeChallengeWeb.CoreComponents do
       type={@type}
       class={[
         "phx-submit-loading:opacity-75 rounded-lg bg-zinc-900 hover:bg-zinc-700 py-2 px-3",
-        "text-lg font-semibold leading-6 text-white active:text-white/80",
+        "text-md sm:text-lg font-semibold leading-6 text-white active:text-white/80",
         @class
       ]}
       {@rest}
@@ -432,7 +432,7 @@ defmodule MvpMatchCodeChallengeWeb.CoreComponents do
         <h1 class="text-2xl sm:text-4xl font-semibold leading-8 text-zinc-600 break-words">
           <%= render_slot(@inner_block) %>
         </h1>
-        <p :if={@subtitle != []} class="mt-4 text-xl leading-6 text-zinc-600">
+        <p :if={@subtitle != []} class="mt-4 text-lg sm:text-xl leading-6 text-zinc-600">
           <%= render_slot(@subtitle) %>
         </p>
       </div>
@@ -475,7 +475,7 @@ defmodule MvpMatchCodeChallengeWeb.CoreComponents do
     ~H"""
     <div class="overflow-y-auto px-4 sm:overflow-visible sm:px-0">
       <table class="w-[40rem] mt-11 sm:w-full">
-        <thead class="text-xl text-left leading-6 text-zinc-500">
+        <thead class="text-lg sm:text-xl text-left leading-6 text-zinc-500">
           <tr>
             <th :for={col <- @col} class="p-0 pb-4 pr-6 font-normal"><%= col[:label] %></th>
             <th :if={@action != []} class="relative p-0 pb-4">
@@ -537,7 +537,7 @@ defmodule MvpMatchCodeChallengeWeb.CoreComponents do
     ~H"""
     <div class="mt-14">
       <dl class="-my-4 divide-y divide-zinc-100">
-        <div :for={item <- @item} class="flex gap-4 py-4 text-xl leading-6 sm:gap-8">
+        <div :for={item <- @item} class="flex gap-4 py-4 text-lg sm:text-xl leading-6 sm:gap-8">
           <dt class="w-1/4 flex-none text-zinc-500"><%= item.title %></dt>
           <dd class="text-zinc-700"><%= render_slot(item) %></dd>
         </div>

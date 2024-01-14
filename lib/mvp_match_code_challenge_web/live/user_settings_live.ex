@@ -7,33 +7,35 @@ defmodule MvpMatchCodeChallengeWeb.UserSettingsLive do
 
   def render(assigns) do
     ~H"""
-    <.header class="pb-24 text-center">
+    <.header class="pb-12 sm:pb-24 sm:text-center">
       Account Settings
       <:subtitle>Manage your account settings here</:subtitle>
     </.header>
-    <div class="space-y-12">
-      <div>
-        <h2 class="text-2xl font-semibold">Your active sessions</h2>
-        <.table id="sessions" rows={[@user_active_tokens_count]}>
-          <:col :let={session_stat} label="Active Web Sessions">
-            <%= session_stat.session_token_count %>
-          </:col>
-          <:col :let={session_stat} label="Active API Tokens">
-            <%= session_stat.api_token_count %>
-          </:col>
-          <:action :let={_}>
-            <.link
-              data-confirm="Are you sure? Afterwards all of your active api & web tokens won't work anymore."
-              href={~p"/users/log_out/all"}
-              method="delete"
-            >
-              <.button class="bg-red-600 hover:bg-red-500">Log out of all active sessions</.button>
-            </.link>
-          </:action>
-        </.table>
+    <div class="flex flex-col sm:flex-row gap-12 sm:gap-0 sm:justify-between">
+      <div class="w-full">
+        <h2 class="text-xl sm:text-2xl font-semibold">Your active sessions</h2>
+        <.list>
+          <:item title="Active Web Sessions">
+            <strong>
+              <%= @user_active_tokens_count.session_token_count %>
+            </strong>
+          </:item>
+          <:item title="Active API Tokens">
+            <strong>
+              <%= @user_active_tokens_count.api_token_count %>
+            </strong>
+          </:item>
+        </.list>
+        <.link
+          data-confirm="Are you sure? Afterwards all of your active api & web tokens won't work anymore."
+          href={~p"/users/log_out/all"}
+          method="delete"
+        >
+          <.button class="bg-red-600 hover:bg-red-500 mt-8">Log out of all active sessions</.button>
+        </.link>
       </div>
-      <div>
-        <h2 class="text-2xl font-semibold">Update your password</h2>
+      <div class="w-full">
+        <h2 class="text-xl sm:text-2xl font-semibold">Update your password</h2>
         <.simple_form
           for={@password_form}
           id="password_form"
