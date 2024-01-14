@@ -9,7 +9,15 @@ defmodule MvpMatchCodeChallengeWeb.ProductLive.DepositFormComponent do
     <div class="flex flex-col sm:flex-row sm:items-center justify-between">
       <div>
         <.header>Your current deposit</.header>
-        <strong class="text-5xl text-orange-600">$<%= @user.deposit %></strong>
+        <p class="text-5xl text-orange-600">$<%= @user.deposit %></p>
+        <.button
+          phx-click="reset_deposit"
+          phx-target={@myself}
+          disabled={@user.deposit < 1}
+          class="!bg-white disabled:opacity-50 text-zinc-900 border-2 border-zinc-900 mt-10"
+        >
+          Reset deposit
+        </.button>
       </div>
       <.simple_form for={@form} id="deposit_form" phx-submit="deposit_coin" phx-target={@myself}>
         <.input
@@ -53,6 +61,29 @@ defmodule MvpMatchCodeChallengeWeb.ProductLive.DepositFormComponent do
         {:noreply,
          socket
          |> put_flash(:error, "Something went wrong, please try again.")}
+    end
+  end
+
+  @impl true
+  def handle_event(
+        "reset_deposit",
+        _,
+        %{assigns: %{user: user}} = socket
+      ) do
+    try do
+      reset_deposit(socket, user)
+    rescue
+      _ ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "Something went wrong, please try again.")}
+    end
+  end
+
+  defp reset_deposit(socket, user) do
+    with {:ok, user} <- VendingMachine.reset_user_deposit(user) do
+      notify_parent({:saved, user})
+      {:noreply, socket}
     end
   end
 

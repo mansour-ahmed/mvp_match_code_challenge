@@ -42,7 +42,7 @@ defmodule MvpMatchCodeChallengeWeb.Layouts do
       </ul>
     </header>
     <main class="min-h-[calc(100vh_-_20rem)]">
-      <div class="mx-auto max-w-4xl px-2">
+      <div class="mx-auto max-w-4xl px-4">
         <.flash_group flash={@flash} />
         <div class="pt-16">
           <%= @inner_content %>

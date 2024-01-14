@@ -9,7 +9,7 @@ defmodule MvpMatchCodeChallenge.Products.ProductTransaction do
   embedded_schema do
     field :transaction_product_amount, :integer
     field :product_total_cost, :decimal
-    field :product_available_amount, :decimal
+    field :product_available_amount, :integer
     field :buyer_available_funds, :decimal
   end
 
@@ -26,7 +26,6 @@ defmodule MvpMatchCodeChallenge.Products.ProductTransaction do
     transaction_product_amount =
       changeset
       |> get_field(:transaction_product_amount)
-      |> Decimal.new()
 
     product_available_amount = get_field(changeset, :product_available_amount)
 
@@ -47,7 +46,7 @@ defmodule MvpMatchCodeChallenge.Products.ProductTransaction do
     buyer_available_funds = get_field(changeset, :buyer_available_funds)
     product_total_cost = get_field(changeset, :product_total_cost)
 
-    if buyer_available_funds < product_total_cost do
+    if Decimal.gt?(product_total_cost, buyer_available_funds) do
       add_error(
         changeset,
         :transaction_product_amount,

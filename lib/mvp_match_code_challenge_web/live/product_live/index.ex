@@ -131,7 +131,7 @@ defmodule MvpMatchCodeChallengeWeb.ProductLive.Index do
       |> assign(:current_user, user)
       ## Forces a re-render of the products table as the deposit amount has changed
       |> stream(:products, Products.list_products())
-      |> put_flash(:info, "Coin deposited successfully! 🎉")
+      |> put_flash(:info, "Deposit updated successfully! 🎉")
     }
   end
 
