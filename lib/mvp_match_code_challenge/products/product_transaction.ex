@@ -6,8 +6,7 @@ defmodule MvpMatchCodeChallenge.Products.ProductTransaction do
 
   @valid_schema_fields ~w(transaction_product_amount product_total_cost product_available_amount buyer_available_funds)a
 
-  @primary_key false
-  schema "product_transactions" do
+  embedded_schema do
     field :transaction_product_amount, :integer
     field :product_total_cost, :decimal
     field :product_available_amount, :decimal

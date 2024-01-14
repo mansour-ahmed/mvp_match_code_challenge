@@ -8,6 +8,14 @@ It consists of a simple Elixir/Phoenix application that simulates a vending mach
 
 The app provides both an API and a user interface (UI) to manage these functionalities.
 
+### Used technologies
+
+- Elixir
+- Phoenix
+- TailwindCSS
+- PostgreSQL
+- Docker
+
 ## Running the App
 
 Clone the repository and navigate to the project directory:
@@ -59,6 +67,23 @@ mix phx.server
 
 The app's UI will be accessible at `http://localhost:4000` & API endpoints at `http://localhost:4000/api`.
 
+## Tests & Code Quality
+
+The app has **194** tests. To run the tests using Elixir: `mix test`.
+
+The app also includes the code quality tools:
+
+- Sobelow: security-focused static analysis.
+- Credo: static code quality analysis.
+- mix_audit: scan Mix dependencies for security vulnerabilities.
+- Dialyxir: to enable Erlang's Dialyzer.
+
+To run all of the above: `mix check`.
+
+## Directory structure
+
+The app uses a standard Phoenix directory structure. For more details, refer to the [Phoenix documentation](https://hexdocs.pm/phoenix/directory_structure.html).
+
 ## Test User Credentials
 
 For testing purposes, the following user accounts have been created in the development environment:
@@ -89,8 +114,6 @@ All API endpoints require authentication unless otherwise mentioned. To obtain a
 
 Once obtained, you can attach the API token in the authorization header as `Authorization: Bearer $YOUR_API_TOKEN` for subsequent requests.
 
-
-
 ## API Endpoints
 
 Here are all available API endpoints:
@@ -98,7 +121,8 @@ Here are all available API endpoints:
 ### Session
 
 - **POST `/api/session/token`**: Generate an API token (Public endpoint).
-- Payload example
+
+  - Payload example
 
   ```json
   {
@@ -112,6 +136,7 @@ Here are all available API endpoints:
 ### Users
 
 - **POST `/api/users/`**: Create a new user (Public endpoint).
+
   - Payload example
 
   ```json

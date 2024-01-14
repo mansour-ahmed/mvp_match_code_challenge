@@ -33,5 +33,6 @@ defmodule MvpMatchCodeChallengeWeb.VendingMachineController do
     end
   end
 
-  def buy(_conn, _params), do: {:error, :bad_request}
+  def buy(_conn, _params),
+    do: {:error, :bad_request, "Invalid params. Please provide a 'transaction_product_amount'."}
 end
