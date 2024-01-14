@@ -57,7 +57,7 @@ defmodule MvpMatchCodeChallengeWeb.ApiAuthTest do
   end
 
   describe "api_require_buyer_user/2" do
-    test "responds with 401 if user is not buyer", %{conn: conn} do
+    test "responds with 403 if user is not buyer", %{conn: conn} do
       seller = user_fixture(%{role: :seller})
 
       conn =
@@ -67,7 +67,7 @@ defmodule MvpMatchCodeChallengeWeb.ApiAuthTest do
         |> ApiAuth.api_require_buyer_user([])
 
       assert conn.halted
-      assert conn.status == 401
+      assert conn.status == 403
       assert conn.resp_body == "You must be a buyer to access this resource."
     end
 
@@ -85,7 +85,7 @@ defmodule MvpMatchCodeChallengeWeb.ApiAuthTest do
   end
 
   describe "api_require_seller_user/2" do
-    test "responds with 401 if user is not seller", %{conn: conn} do
+    test "responds with 403 if user is not seller", %{conn: conn} do
       buyer = user_fixture(%{role: :buyer})
 
       conn =
@@ -95,7 +95,7 @@ defmodule MvpMatchCodeChallengeWeb.ApiAuthTest do
         |> ApiAuth.api_require_seller_user([])
 
       assert conn.halted
-      assert conn.status == 401
+      assert conn.status == 403
       assert conn.resp_body == "You must be a seller to access this resource."
     end
 
@@ -123,10 +123,10 @@ defmodule MvpMatchCodeChallengeWeb.ApiAuthTest do
 
       assert conn.halted
       assert conn.status == 401
-      assert conn.resp_body == "Not authorized"
+      assert conn.resp_body == "You must use a valid token to access this resource."
     end
 
-    test "responds with 401 if user is not admin", %{conn: conn, user: user} do
+    test "responds with 403 if user is not admin", %{conn: conn, user: user} do
       random_user = user_fixture(%{role: :seller})
       params = %{"id" => random_user.id}
 
@@ -137,11 +137,11 @@ defmodule MvpMatchCodeChallengeWeb.ApiAuthTest do
         |> ApiAuth.api_require_user_admin([])
 
       assert conn.halted
-      assert conn.status == 401
+      assert conn.status == 403
       assert conn.resp_body == "Not authorized"
     end
 
-    test "responds with 401 if user id is not valid", %{conn: conn, user: user} do
+    test "responds with 403 if user id is not valid", %{conn: conn, user: user} do
       params = %{"id" => "foo"}
 
       conn =
@@ -151,7 +151,7 @@ defmodule MvpMatchCodeChallengeWeb.ApiAuthTest do
         |> ApiAuth.api_require_user_admin([])
 
       assert conn.halted
-      assert conn.status == 401
+      assert conn.status == 403
       assert conn.resp_body == "Not authorized"
     end
 

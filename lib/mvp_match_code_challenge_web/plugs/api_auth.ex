@@ -5,6 +5,7 @@ defmodule MvpMatchCodeChallengeWeb.ApiAuth do
   import Plug.Conn
 
   @unauthorized_message "Not authorized"
+  @unauthenticated_message "You must use a valid token to access this resource."
 
   def fetch_api_user(conn, _opts) do
     with ["Bearer " <> token] <- get_req_header(conn, "authorization"),
@@ -23,7 +24,7 @@ defmodule MvpMatchCodeChallengeWeb.ApiAuth do
     if conn.assigns[:current_user] do
       conn
     else
-      unauthorized_response(conn, "You must use a valid token to access this resource.")
+      unauthenticated_response(conn, @unauthenticated_message)
     end
   end
 
@@ -62,7 +63,7 @@ defmodule MvpMatchCodeChallengeWeb.ApiAuth do
         check_user_admin(conn, current_user_id, opts)
 
       _ ->
-        unauthorized_response(conn, @unauthorized_message)
+        unauthenticated_response(conn, @unauthenticated_message)
     end
   end
 
@@ -80,11 +81,17 @@ defmodule MvpMatchCodeChallengeWeb.ApiAuth do
     end
   end
 
-  defp check_user_admin(conn, _, _), do: unauthorized_response(conn, @unauthorized_message)
+  defp check_user_admin(conn, _, _), do: unauthenticated_response(conn, @unauthorized_message)
+
+  defp unauthenticated_response(conn, message) do
+    conn
+    |> send_resp(:unauthorized, message)
+    |> halt()
+  end
 
   defp unauthorized_response(conn, message) do
     conn
-    |> send_resp(:unauthorized, message)
+    |> send_resp(:forbidden, message)
     |> halt()
   end
 end

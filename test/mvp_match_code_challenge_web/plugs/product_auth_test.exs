@@ -74,7 +74,7 @@ defmodule MvpMatchCodeChallengeWeb.ProductAuthTest do
       %{conn: conn, user: user, product: product}
     end
 
-    test "responds with 401 if product id is not found", %{conn: conn} do
+    test "returns 403 if product id is not found", %{conn: conn} do
       random_user = user_fixture(%{role: :seller})
       params = %{"id" => -1}
 
@@ -85,11 +85,11 @@ defmodule MvpMatchCodeChallengeWeb.ProductAuthTest do
         |> ProductAuth.api_require_product_seller([])
 
       assert conn.halted
-      assert conn.status == 401
+      assert conn.status == 403
       assert conn.resp_body == "You must be the seller of the product to access this resource."
     end
 
-    test "responds with 401 if product id is not valid", %{conn: conn} do
+    test "returns 403 if product id is not valid", %{conn: conn} do
       random_user = user_fixture(%{role: :seller})
       params = %{"id" => "foo"}
 
@@ -100,11 +100,11 @@ defmodule MvpMatchCodeChallengeWeb.ProductAuthTest do
         |> ProductAuth.api_require_product_seller([])
 
       assert conn.halted
-      assert conn.status == 401
+      assert conn.status == 403
       assert conn.resp_body == "You must be the seller of the product to access this resource."
     end
 
-    test "responds with 401 if user is not authenticated", %{conn: conn, product: product} do
+    test "returns 401 if user is not authenticated", %{conn: conn, product: product} do
       params = %{"id" => product.id}
 
       conn =
@@ -114,10 +114,10 @@ defmodule MvpMatchCodeChallengeWeb.ProductAuthTest do
 
       assert conn.halted
       assert conn.status == 401
-      assert conn.resp_body == "You must be the seller of the product to access this resource."
+      assert conn.resp_body == "You must log in to access this resource."
     end
 
-    test "responds with 401 if user is not product seller", %{conn: conn, product: product} do
+    test "returns 403 if user is not product seller", %{conn: conn, product: product} do
       random_user = user_fixture(%{role: :seller})
       params = %{"id" => product.id}
 
@@ -128,11 +128,11 @@ defmodule MvpMatchCodeChallengeWeb.ProductAuthTest do
         |> ProductAuth.api_require_product_seller([])
 
       assert conn.halted
-      assert conn.status == 401
+      assert conn.status == 403
       assert conn.resp_body == "You must be the seller of the product to access this resource."
     end
 
-    test "does not respond with 401 if user is product seller", %{
+    test "does not return 401 if user is product seller", %{
       conn: conn,
       user: user,
       product: product

@@ -29,25 +29,25 @@ defmodule MvpMatchCodeChallengeWeb.UserControllerTest do
       assert response(conn, 401) == "You must use a valid token to access this resource."
     end
 
-    test "returns 401 when user is not given user admin", %{
+    test "returns 403 when user is not given user admin", %{
       conn_with_token: conn,
       random_user: random_user
     } do
       conn = get(conn, "/api/users/#{random_user.id}")
 
-      assert response(conn, 401) == "Not authorized"
+      assert response(conn, 403) == "Not authorized"
     end
 
-    test "returns 401 when user is not found", %{conn_with_token: conn} do
+    test "returns 403 when user is not found", %{conn_with_token: conn} do
       conn = get(conn, "/api/users/223232")
 
-      assert response(conn, 401) == "Not authorized"
+      assert response(conn, 403) == "Not authorized"
     end
 
-    test "returns 401 when user id is not valid", %{conn_with_token: conn} do
+    test "returns 403 when user id is not valid", %{conn_with_token: conn} do
       conn = get(conn, "/api/users/foo")
 
-      assert response(conn, 401) == "Not authorized"
+      assert response(conn, 403) == "Not authorized"
     end
 
     test "returns 200 when user is found", %{conn_with_token: conn, user: user} do
@@ -87,25 +87,25 @@ defmodule MvpMatchCodeChallengeWeb.UserControllerTest do
       assert response(conn, 401) == "You must use a valid token to access this resource."
     end
 
-    test "returns 401 when user is not given user admin", %{
+    test "returns 403 when user is not given user admin", %{
       conn_with_token: conn,
       random_user: random_user
     } do
       conn = delete(conn, "/api/users/#{random_user.id}")
 
-      assert response(conn, 401) == "Not authorized"
+      assert response(conn, 403) == "Not authorized"
     end
 
-    test "returns 401 when user is not found", %{conn_with_token: conn} do
+    test "returns 403 when user is not found", %{conn_with_token: conn} do
       conn = delete(conn, "/api/users/223232")
 
-      assert response(conn, 401) == "Not authorized"
+      assert response(conn, 403) == "Not authorized"
     end
 
-    test "returns 401 when user id is not valid", %{conn_with_token: conn} do
+    test "returns 403 when user id is not valid", %{conn_with_token: conn} do
       conn = delete(conn, "/api/users/foo")
 
-      assert response(conn, 401) == "Not authorized"
+      assert response(conn, 403) == "Not authorized"
     end
 
     test "returns 204 when user is found", %{conn_with_token: conn, user: user} do
@@ -122,16 +122,16 @@ defmodule MvpMatchCodeChallengeWeb.UserControllerTest do
       assert response(conn, 401) == "You must use a valid token to access this resource."
     end
 
-    test "returns 401 when user is not given user admin", %{
+    test "returns 403 when user is not given user admin", %{
       conn_with_token: conn,
       random_user: random_user
     } do
       conn = put(conn, "/api/users/#{random_user.id}/deposit/reset")
 
-      assert response(conn, 401) == "Not authorized"
+      assert response(conn, 403) == "Not authorized"
     end
 
-    test "returns 401 when user does not have buyer role", %{
+    test "returns 403 when user does not have buyer role", %{
       conn: conn
     } do
       seller_user = user_fixture(%{role: :seller})
@@ -140,13 +140,13 @@ defmodule MvpMatchCodeChallengeWeb.UserControllerTest do
 
       conn = put(conn_with_token, "/api/users/#{seller_user.id}/deposit/reset")
 
-      assert response(conn, 401) == "You must be a buyer to access this resource."
+      assert response(conn, 403) == "You must be a buyer to access this resource."
     end
 
-    test "returns 401 when user is not found", %{conn_with_token: conn} do
+    test "returns 403 when user is not found", %{conn_with_token: conn} do
       conn = put(conn, "/api/users/223232/deposit/reset")
 
-      assert response(conn, 401) == "Not authorized"
+      assert response(conn, 403) == "Not authorized"
     end
 
     test "returns 200 when user is found", %{conn_with_token: conn, user: user} do
@@ -163,16 +163,16 @@ defmodule MvpMatchCodeChallengeWeb.UserControllerTest do
       assert response(conn, 401) == "You must use a valid token to access this resource."
     end
 
-    test "returns 401 when user is not given user admin", %{
+    test "returns 403 when user is not given user admin", %{
       conn_with_token: conn,
       random_user: random_user
     } do
       conn = post(conn, "/api/users/#{random_user.id}/deposit/5")
 
-      assert response(conn, 401) == "Not authorized"
+      assert response(conn, 403) == "Not authorized"
     end
 
-    test "returns 401 when user does not have buyer role", %{
+    test "returns 403 when user does not have buyer role", %{
       conn: conn
     } do
       seller_user = user_fixture(%{role: :seller})
@@ -181,13 +181,13 @@ defmodule MvpMatchCodeChallengeWeb.UserControllerTest do
 
       conn = post(conn_with_token, "/api/users/#{seller_user.id}/deposit/5")
 
-      assert response(conn, 401) == "You must be a buyer to access this resource."
+      assert response(conn, 403) == "You must be a buyer to access this resource."
     end
 
-    test "returns 401 when user is not found", %{conn_with_token: conn} do
+    test "returns 403 when user is not found", %{conn_with_token: conn} do
       conn = post(conn, "/api/users/223232/deposit/5")
 
-      assert response(conn, 401) == "Not authorized"
+      assert response(conn, 403) == "Not authorized"
     end
 
     test "returns 200 when user is found", %{conn_with_token: conn, user: user} do

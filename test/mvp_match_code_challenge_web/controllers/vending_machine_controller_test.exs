@@ -23,7 +23,7 @@ defmodule MvpMatchCodeChallengeWeb.VendingMachineControllerTest do
   end
 
   describe "POST /products/:id" do
-    test "renders errors when user is not logged in", %{conn: conn, product: product} do
+    test "returns 401 when user is not logged in", %{conn: conn, product: product} do
       conn =
         post(conn, ~p"/api/products/#{product.id}/buy", %{
           transaction_product_amount: 1
@@ -32,7 +32,7 @@ defmodule MvpMatchCodeChallengeWeb.VendingMachineControllerTest do
       assert response(conn, 401) == "You must use a valid token to access this resource."
     end
 
-    test "renders errors when product is not found", %{conn_with_token: conn} do
+    test "returns 404 when product is not found", %{conn_with_token: conn} do
       conn =
         post(conn, ~p"/api/products/-1/buy", %{
           transaction_product_amount: 1
@@ -41,7 +41,7 @@ defmodule MvpMatchCodeChallengeWeb.VendingMachineControllerTest do
       assert json_response(conn, 404)["errors"] == %{"detail" => "Not Found"}
     end
 
-    test "renders errors when product id is not valid", %{conn_with_token: conn} do
+    test "returns 400 when product id is not valid", %{conn_with_token: conn} do
       conn =
         post(conn, ~p"/api/products/foo/buy", %{
           transaction_product_amount: 1
@@ -50,7 +50,7 @@ defmodule MvpMatchCodeChallengeWeb.VendingMachineControllerTest do
       assert json_response(conn, 400)["errors"] == %{"detail" => "Bad Request"}
     end
 
-    test "renders error when buyer tries to buy more than available", %{
+    test "returns 422 when buyer tries to buy more than available stock", %{
       conn_with_token: conn,
       product: product
     } do
@@ -66,7 +66,7 @@ defmodule MvpMatchCodeChallengeWeb.VendingMachineControllerTest do
              } == json_response(conn, 422)["errors"]
     end
 
-    test "renders error when buyer tries to buy with insufficient funds", %{
+    test "returns 422 when buyer tries to buy with insufficient funds", %{
       conn_with_token: conn
     } do
       product = product_fixture(%{amount_available: 5, cost: 100_000})
@@ -83,7 +83,7 @@ defmodule MvpMatchCodeChallengeWeb.VendingMachineControllerTest do
              } == json_response(conn, 422)["errors"]
     end
 
-    test "allows only buyers to buy products", %{conn: conn, product: product} do
+    test "returns 403 when a seller tries to buy products", %{conn: conn, product: product} do
       user = user_fixture(%{role: :seller})
       user_token = ApiTokens.create_user_api_token(user)
       conn_with_token = put_req_header(conn, "authorization", "Bearer #{user_token}")
@@ -93,10 +93,13 @@ defmodule MvpMatchCodeChallengeWeb.VendingMachineControllerTest do
           transaction_product_amount: 1
         })
 
-      assert response(conn, 401) == "You must be a buyer to access this resource."
+      assert response(conn, 403) == "You must be a buyer to access this resource."
     end
 
-    test "renders transaction when product is found", %{conn_with_token: conn, product: product} do
+    test "successfully buys given product in specified amount", %{
+      conn_with_token: conn,
+      product: product
+    } do
       conn =
         post(conn, ~p"/api/products/#{product.id}/buy", %{
           transaction_product_amount: 1

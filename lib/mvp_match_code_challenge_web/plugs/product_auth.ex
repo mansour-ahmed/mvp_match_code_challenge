@@ -28,6 +28,12 @@ defmodule MvpMatchCodeChallengeWeb.ProductAuth do
     authorize_action(product_id, user, conn, method: :api_conn)
   end
 
+  defp authorize_action(_, nil, conn, method: :api_conn),
+    do:
+      conn
+      |> send_resp(:unauthorized, "You must log in to access this resource.")
+      |> halt()
+
   defp authorize_action(_, nil, context, opts), do: halt_context(context, opts[:method])
 
   defp authorize_action(product_id, user, context, opts) do
@@ -67,7 +73,7 @@ defmodule MvpMatchCodeChallengeWeb.ProductAuth do
 
   defp halt_context(conn, :api_conn) do
     conn
-    |> send_resp(:unauthorized, "#{@not_authored_message} resource.")
+    |> send_resp(:forbidden, "#{@not_authored_message} resource.")
     |> halt()
   end
 
