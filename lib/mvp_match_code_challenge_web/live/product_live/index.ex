@@ -118,10 +118,14 @@ defmodule MvpMatchCodeChallengeWeb.ProductLive.Index do
         {MvpMatchCodeChallengeWeb.ProductLive.DepositFormComponent, {:saved, user}},
         socket
       ) do
-    {:noreply,
-     socket
-     |> assign(:current_user, user)
-     |> put_flash(:info, "Coin deposited successfully")}
+    {
+      :noreply,
+      socket
+      |> assign(:current_user, user)
+      ## Forces a re-render of the products table as the deposit amount has changed
+      |> stream(:products, Products.list_products())
+      |> put_flash(:info, "Coin deposited successfully")
+    }
   end
 
   @impl true
