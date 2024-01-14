@@ -23,9 +23,17 @@ defmodule MvpMatchCodeChallengeWeb.ProductLive.BuyFormComponent do
             phx-change="validate"
             phx-target={@myself}
           >
-            <.input field={@form[:transaction_product_amount]} type="number" label="Amount" min="1" />
+            <.input
+              field={@form[:transaction_product_amount]}
+              type="number"
+              label="Amount"
+              min="1"
+              max={@product.amount_available}
+            />
             <:actions>
-              <.button phx-disable-with="Buying...">Buy product</.button>
+              <.button disabled={!@form.source.valid?} phx-disable-with="Buying...">
+                Buy product
+              </.button>
             </:actions>
           </.simple_form>
         </div>
