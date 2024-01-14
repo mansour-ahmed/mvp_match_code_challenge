@@ -23,7 +23,15 @@ defmodule MvpMatchCodeChallenge.Application do
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: MvpMatchCodeChallenge.Supervisor]
-    Supervisor.start_link(children, opts)
+    supervisor = Supervisor.start_link(children, opts)
+
+    if System.get_env("RUN_SEEDS") == "true", do: run_seeds()
+
+    supervisor
+  end
+
+  defp run_seeds do
+    Code.compile_file("/app/lib/mvp_match_code_challenge-0.1.0/priv/repo/seeds.exs")
   end
 
   # Tell Phoenix to update the endpoint configuration

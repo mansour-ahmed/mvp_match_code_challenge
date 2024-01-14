@@ -48,13 +48,16 @@ if config_env() == :prod do
       You can generate one by calling: mix phx.gen.secret
       """
 
-  host = System.get_env("PHX_HOST") || "example.com"
+  # host must be configured in production
+  # host = System.get_env("PHX_HOST") || "example.com"
   port = String.to_integer(System.get_env("PORT") || "4000")
 
   config :mvp_match_code_challenge, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
   config :mvp_match_code_challenge, MvpMatchCodeChallengeWeb.Endpoint,
-    url: [host: host, port: 443, scheme: "https"],
+    # Disable https use, assumming the app is only locally used
+    # https must be enabled in production
+    # url: [host: host, port: 443, scheme: "https"],
     http: [
       # Enable IPv6 and bind on all interfaces.
       # Set it to  {0, 0, 0, 0, 0, 0, 0, 1} for local network only access.

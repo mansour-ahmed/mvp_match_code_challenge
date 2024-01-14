@@ -22,19 +22,25 @@ products = [
     product_name: "Product 1",
     amount_available: 10,
     cost: "10",
-    seller_id: Enum.at(sellers, 1).id
+    seller_id: Enum.at(sellers, 0).id
   },
   %{
     product_name: "Product 2",
     amount_available: 15,
     cost: "15",
-    seller_id: Enum.at(sellers, 1).id
+    seller_id: Enum.at(sellers, 0).id
   },
   %{
     product_name: "Product 3",
     amount_available: 20,
     cost: "20",
-    seller_id: Enum.at(sellers, 1).id
+    seller_id: Enum.at(sellers, 0).id
+  },
+  %{
+    product_name: "Product 4",
+    amount_available: 100,
+    cost: "99",
+    seller_id: Enum.at(sellers, 0).id
   }
 ]
 

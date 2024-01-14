@@ -1,8 +1,26 @@
 version: "3.7"
 services:
+  app:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "4000:4000"
+    environment:
+      # Hardcoded for demo purposes only
+      # must be changed in production
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/postgres
+      - SECRET_KEY_BASE=n2v9+IKQNkdTBlCeEgZ2QVaCJ5HZeyr3MOGm4losbiZL9j2HM8keik8Gur/ld6sC
+      - RUN_SEEDS=true
   postgres:
-    image: postgres:latest
+    image: postgres:16.1
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
