@@ -31,18 +31,18 @@ defmodule MvpMatchCodeChallengeWeb.Router do
       scope "/users" do
         scope "/:id" do
           pipe_through [:api_require_user_admin]
+
           get "/", UserController, :show
           delete "/", UserController, :delete
-        end
 
-        scope "/:id" do
-          pipe_through [
-            :api_require_user_admin,
-            :api_require_buyer_user
-          ]
+          scope "/" do
+            pipe_through [
+              :api_require_buyer_user
+            ]
 
-          put "/deposit/reset", UserController, :reset_deposit
-          post "/deposit/:coin", UserController, :deposit
+            put "/deposit/reset", UserController, :reset_deposit
+            post "/deposit/:coin", UserController, :deposit
+          end
         end
       end
 
@@ -91,7 +91,6 @@ defmodule MvpMatchCodeChallengeWeb.Router do
       post "/log_in", UserSessionController, :create
     end
 
-    # Authenticated routes
     scope "/" do
       pipe_through [:require_authenticated_user]
 
@@ -139,16 +138,6 @@ defmodule MvpMatchCodeChallengeWeb.Router do
       live "/", ProductLive.Index, :index
       live "/products", ProductLive.Index, :index
       live "/products/:id", ProductLive.Show, :show
-    end
-
-    # Enable LiveDashboard and Swoosh mailbox preview in development
-    if Application.compile_env(:mvp_match_code_challenge, :dev_routes) do
-      import Phoenix.LiveDashboard.Router
-
-      scope "/dev" do
-        live_dashboard "/dashboard", metrics: MvpMatchCodeChallengeWeb.Telemetry
-        forward "/mailbox", Plug.Swoosh.MailboxPreview
-      end
     end
   end
 end
