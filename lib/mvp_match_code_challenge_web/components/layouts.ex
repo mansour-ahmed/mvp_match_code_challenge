@@ -3,12 +3,20 @@ defmodule MvpMatchCodeChallengeWeb.Layouts do
 
   def app(assigns) do
     ~H"""
-    <header class="py-10 sm:py-8 px-2">
-      <ul class="relative flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end">
+    <header class="py-2 px-2 flex flex-row justify-between">
+      <.link href={~p"/"}>
+        <img src="/images/logo.png" alt="App Logo" class="w-24" />
+      </.link>
+      <ul class="relative flex items-center gap-8 px-4 sm:px-6 lg:px-8 justify-end">
+        <li :if={@current_user} class="text-2xl leading-6 text-zinc-900">
+          <%= @current_user.username %> (<%= @current_user.role %>)
+        </li>
+        <li>
+          <.header_link href={~p"/products"}>
+            Products
+          </.header_link>
+        </li>
         <%= if @current_user do %>
-          <li class="text-2xl leading-6 text-zinc-900">
-            <%= @current_user.username %> (<%= @current_user.role %>)
-          </li>
           <li>
             <.header_link href={~p"/users/settings"}>
               Settings
@@ -33,12 +41,15 @@ defmodule MvpMatchCodeChallengeWeb.Layouts do
         <% end %>
       </ul>
     </header>
-    <main class="px-4 py-20 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-2xl">
+    <main class="min-h-[calc(100vh_-_20rem)]">
+      <div class="mx-auto max-w-4xl px-2">
         <.flash_group flash={@flash} />
-        <%= @inner_content %>
+        <div class="pt-16">
+          <%= @inner_content %>
+        </div>
       </div>
     </main>
+    <.footer />
     """
   end
 
@@ -51,10 +62,21 @@ defmodule MvpMatchCodeChallengeWeb.Layouts do
     <.link
       href={@href}
       method={@method}
-      class="text-lg leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
+      class="text-2xl leading-6 text-orange-600  hover:text-orange-900"
     >
       <%= render_slot(@inner_block) %>
     </.link>
+    """
+  end
+
+  defp footer(assigns) do
+    ~H"""
+    <footer class="flex flex-row items-center justify-center gap-8 pt-24 pb-6">
+      <aside>
+        Created by Ahmed Mansour
+      </aside>
+      <img src="/images/signature.jpg" class="w-28" alt="Ahmed's signature Logo" />
+    </footer>
     """
   end
 

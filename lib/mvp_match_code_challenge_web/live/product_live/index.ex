@@ -14,8 +14,15 @@ defmodule MvpMatchCodeChallengeWeb.ProductLive.Index do
         user={@current_user}
       />
     </div>
+    <p :if={!@current_user} class="text-lg py-10">
+      Want to add products or buy products?
+      Please
+      <.link class="text-orange-600 font-semibold hover:underline" href={~p"/users/log_in"}>
+        Log in
+      </.link>
+    </p>
     <.header>
-      Listing Products
+      All Products
       <:actions>
         <%= if  seller?(@current_user) do %>
           <.link patch={~p"/products/new"}>
@@ -31,7 +38,7 @@ defmodule MvpMatchCodeChallengeWeb.ProductLive.Index do
     >
       <:col :let={{_id, product}} label="Product name"><%= product.product_name %></:col>
       <:col :let={{_id, product}} label="Amount available"><%= product.amount_available %></:col>
-      <:col :let={{_id, product}} label="Cost"><%= product.cost %></:col>
+      <:col :let={{_id, product}} label="Cost">$<%= product.cost %></:col>
       <:action :let={{_id, product}}>
         <%= if @current_user do %>
           <%= if product.seller_id == @current_user.id do %>
@@ -124,7 +131,7 @@ defmodule MvpMatchCodeChallengeWeb.ProductLive.Index do
       |> assign(:current_user, user)
       ## Forces a re-render of the products table as the deposit amount has changed
       |> stream(:products, Products.list_products())
-      |> put_flash(:info, "Coin deposited successfully")
+      |> put_flash(:info, "Coin deposited successfully! 🎉")
     }
   end
 
@@ -146,7 +153,10 @@ defmodule MvpMatchCodeChallengeWeb.ProductLive.Index do
     {:noreply,
      socket
      |> assign(:current_user, updated_user)
-     |> put_flash(:info, "Product bought successfully")
+     |> put_flash(
+       :info,
+       "Product bought for $#{product_transaction.total_cost_to_buyer}! 🔥 Your new balance is $#{updated_user.deposit}"
+     )
      |> stream(:products, products)}
   end
 

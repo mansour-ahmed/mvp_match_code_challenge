@@ -7,29 +7,33 @@ defmodule MvpMatchCodeChallengeWeb.UserSettingsLive do
 
   def render(assigns) do
     ~H"""
-    <.header class="text-center">
+    <.header class="pb-24 text-center">
       Account Settings
-      <:subtitle>Manage your account password settings</:subtitle>
+      <:subtitle>Manage your account settings here</:subtitle>
     </.header>
-    <div class="space-y-12 divide-y">
-      <.table id="sessions" rows={[@user_active_tokens_count]}>
-        <:col :let={session_stat} label="Active Web Sessions">
-          <%= session_stat.session_token_count %>
-        </:col>
-        <:col :let={session_stat} label="Active API Tokens">
-          <%= session_stat.api_token_count %>
-        </:col>
-        <:action :let={_}>
-          <.link
-            data-confirm="Are you sure? Afterwards all of your active api & web tokens won't work anymore."
-            href={~p"/users/log_out/all"}
-            method="delete"
-          >
-            <.button class="bg-red-600 hover:bg-red-500">Log out of all active sessions</.button>
-          </.link>
-        </:action>
-      </.table>
+    <div class="space-y-12">
       <div>
+        <h2 class="text-2xl font-semibold">Your active sessions</h2>
+        <.table id="sessions" rows={[@user_active_tokens_count]}>
+          <:col :let={session_stat} label="Active Web Sessions">
+            <%= session_stat.session_token_count %>
+          </:col>
+          <:col :let={session_stat} label="Active API Tokens">
+            <%= session_stat.api_token_count %>
+          </:col>
+          <:action :let={_}>
+            <.link
+              data-confirm="Are you sure? Afterwards all of your active api & web tokens won't work anymore."
+              href={~p"/users/log_out/all"}
+              method="delete"
+            >
+              <.button class="bg-red-600 hover:bg-red-500">Log out of all active sessions</.button>
+            </.link>
+          </:action>
+        </.table>
+      </div>
+      <div>
+        <h2 class="text-2xl font-semibold">Update your password</h2>
         <.simple_form
           for={@password_form}
           id="password_form"

@@ -6,10 +6,10 @@ defmodule MvpMatchCodeChallengeWeb.ProductLive.DepositFormComponent do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="flex flex-row items-center justify-between">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between">
       <div>
         <.header>Your current deposit</.header>
-        <strong class="text-5xl"><%= @user.deposit %></strong>
+        <strong class="text-5xl text-orange-600">$<%= @user.deposit %></strong>
       </div>
       <.simple_form for={@form} id="deposit_form" phx-submit="deposit_coin" phx-target={@myself}>
         <.input

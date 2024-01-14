@@ -28,15 +28,24 @@ defmodule MvpMatchCodeChallengeWeb.ProductLiveTest do
     end
 
     test "lists all products", %{
+      unauthenticated_conn: conn,
+      product_sold_by_current_user: product_sold_by_current_user,
+      random_product: random_product
+    } do
+      {:ok, _index_live, html} = live(conn, ~p"/products")
+
+      assert html =~ "All Products"
+      assert html =~ "Want to add products or buy products?"
+      assert html =~ product_sold_by_current_user.product_name
+      assert html =~ random_product.product_name
+    end
+
+    test "lists products edit button for product owner", %{
       conn: conn,
       product_sold_by_current_user: product_sold_by_current_user,
       random_product: random_product
     } do
-      {:ok, index_live, html} = live(conn, ~p"/products")
-
-      assert html =~ "Listing Products"
-      assert html =~ product_sold_by_current_user.product_name
-      assert html =~ random_product.product_name
+      {:ok, index_live, _html} = live(conn, ~p"/products")
 
       assert index_live |> has_element?("#products-#{product_sold_by_current_user.id} a", "Edit")
       refute index_live |> has_element?("#products-#{random_product.id} a", "Edit")

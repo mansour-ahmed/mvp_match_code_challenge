@@ -8,7 +8,6 @@ defmodule MvpMatchCodeChallengeWeb.ProductLive.Show do
     ~H"""
     <.header>
       Product <%= @product.id %>
-      <:subtitle>This is a product record from your database.</:subtitle>
       <:actions>
         <%= if @current_user && @product.seller_id == @current_user.id do %>
           <.link patch={~p"/products/#{@product}/show/edit"} phx-click={JS.push_focus()}>
@@ -19,9 +18,9 @@ defmodule MvpMatchCodeChallengeWeb.ProductLive.Show do
     </.header>
 
     <.list>
+      <:item title="Product name"><strong><%= @product.product_name %></strong></:item>
       <:item title="Amount available"><%= @product.amount_available %></:item>
-      <:item title="Cost"><%= @product.cost %></:item>
-      <:item title="Product name"><%= @product.product_name %></:item>
+      <:item title="Cost">$<%= @product.cost %></:item>
     </.list>
 
     <.back navigate={~p"/products"}>Back to products</.back>

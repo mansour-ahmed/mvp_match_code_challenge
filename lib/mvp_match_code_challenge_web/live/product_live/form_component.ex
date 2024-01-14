@@ -9,7 +9,7 @@ defmodule MvpMatchCodeChallengeWeb.ProductLive.FormComponent do
     <div>
       <.header>
         <%= @title %>
-        <:subtitle>Use this form to manage product records in your database.</:subtitle>
+        <:subtitle>Add new product to the vending machine! 💎</:subtitle>
       </.header>
 
       <.simple_form

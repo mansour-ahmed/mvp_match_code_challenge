@@ -135,7 +135,7 @@ defmodule MvpMatchCodeChallengeWeb.Router do
 
     live_session :public_session,
       on_mount: [{MvpMatchCodeChallengeWeb.UserAuth, :mount_current_user}] do
-      live "/", ProductLive.Index, :index
+      live "/", HomeLive
       live "/products", ProductLive.Index, :index
       live "/products/:id", ProductLive.Show, :show
     end

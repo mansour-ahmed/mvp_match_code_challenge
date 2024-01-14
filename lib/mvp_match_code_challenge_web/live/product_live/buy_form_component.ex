@@ -10,9 +10,9 @@ defmodule MvpMatchCodeChallengeWeb.ProductLive.BuyFormComponent do
         <.header>
           Buying product <%= @product.product_name %>
           <:subtitle>
-            <p>Product cost: <strong><%= @product.cost %></strong></p>
+            <p>Product cost: <strong>$<%= @product.cost %></strong></p>
             <p>Product available amount: <strong><%= @product.amount_available %></strong></p>
-            <p>Your current deposit: <strong><%= @user.deposit %></strong></p>
+            <p>Your current deposit: <strong>$<%= @user.deposit %></strong></p>
           </:subtitle>
         </.header>
         <div class="w-full">
